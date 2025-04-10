@@ -5,7 +5,7 @@ import { format, parseISO } from 'date-fns';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, 
   Tooltip, ResponsiveContainer, Legend, BarChart, Bar, 
-  ComposedChart, Area
+  ComposedChart, Area, ReferenceLine
 } from 'recharts';
 import { 
   ChartContainer, 
@@ -51,7 +51,8 @@ const TechnicalIndicatorsChart: React.FC<TechnicalIndicatorsChartProps> = ({ pre
 
   // Prepare Bollinger Bands data
   const bollingerData = [...historicalData.slice(-30), ...predictionData].map((item) => {
-    const price = item.price || item.actual || 0;
+    // Fix the type issue by checking which type of item we have
+    const price = 'price' in item ? item.price : ('actual' in item && item.actual) || 0;
     
     return {
       date: item.date,
