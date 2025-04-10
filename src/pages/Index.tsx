@@ -5,6 +5,8 @@ import StockSearch from '@/components/StockSearch';
 import PredictionChart from '@/components/PredictionChart';
 import PredictionMetrics from '@/components/PredictionMetrics';
 import Footer from '@/components/Footer';
+import ChatSupportButton from '@/components/ChatSupportButton';
+import ChatDialog from '@/components/ChatDialog';
 import { getStockPrediction, StockPrediction } from '@/utils/mockData';
 import { AlertTriangle, ChevronDown } from 'lucide-react';
 
@@ -87,6 +89,10 @@ const Index = () => {
       </main>
       
       <Footer />
+      
+      {/* Chat support components */}
+      <ChatSupportButton />
+      <ChatDialog />
     </div>
   );
 };
