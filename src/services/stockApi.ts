@@ -39,7 +39,8 @@ export const convertApiDataToPrediction = (data: any, ticker: string): StockPred
     // Extract historical data (past 60 days)
     const historicalData = dates.slice(0, 60).map(date => ({
       date: date,
-      price: parseFloat(timeSeriesData[date]['4. close'])
+      price: parseFloat(timeSeriesData[date]['4. close']),
+      volume: parseInt(timeSeriesData[date]['5. volume']) || 0 // Add the required volume property
     }));
     
     // Generate simple prediction data (next 30 days)
@@ -65,6 +66,7 @@ export const convertApiDataToPrediction = (data: any, ticker: string): StockPred
     
     // Calculate simple metrics (would come from your model in reality)
     const metrics = {
+      mse: 2.5 + (Math.random() * 1.5), // Add the missing mse property (2.5-4.0)
       accuracy: 85 + (Math.random() * 10), // 85-95% 
       confidence: 0.75 + (Math.random() * 0.2), // 0.75-0.95
       rmse: 1.2 + (Math.random() * 0.8), // 1.2-2.0
@@ -75,12 +77,14 @@ export const convertApiDataToPrediction = (data: any, ticker: string): StockPred
     const rsi = 50 + (Math.random() * 30 - 15); // 35-65
     const macd = (Math.random() * 2) - 1; // -1 to 1
     
-    // Create a complete StockPrediction object
+    // Create a complete StockPrediction object with all required properties
     return {
       ticker,
       metadata: {
+        ticker: ticker, // Add the missing ticker property
         name: ticker, // In a real app, you would fetch the company name
         currentPrice: lastPrice,
+        previousClose: parseFloat(timeSeriesData[dates[1]]['4. close']), // Add the missing previousClose property
         change: lastPrice - parseFloat(timeSeriesData[dates[1]]['4. close']),
         changePercent: ((lastPrice / parseFloat(timeSeriesData[dates[1]]['4. close'])) - 1) * 100
       },
