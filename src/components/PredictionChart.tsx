@@ -1,11 +1,16 @@
 
 import React from 'react';
-import { 
-  LineChart, Line, XAxis, YAxis, CartesianGrid, 
-  Tooltip, ResponsiveContainer, ReferenceLine, Legend, TooltipProps 
-} from 'recharts';
 import { format, parseISO } from 'date-fns';
 import { StockPrediction } from '@/utils/mockData';
+import { 
+  LineChart, Line, XAxis, YAxis, CartesianGrid, 
+  Tooltip, ResponsiveContainer, ReferenceLine, Legend 
+} from 'recharts';
+import { 
+  ChartContainer, 
+  ChartTooltip, 
+  ChartTooltipContent
+} from '@/components/ui/chart';
 
 interface PredictionChartProps {
   prediction: StockPrediction;
@@ -37,30 +42,22 @@ const PredictionChart: React.FC<PredictionChartProps> = ({ prediction }) => {
     return `$${value.toFixed(0)}`;
   };
 
-  const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
-    if (active && payload && payload.length) {
-      const dataPoint = payload[0].payload;
-      const date = format(parseISO(dataPoint.date), 'MMM dd, yyyy');
-      
-      return (
-        <div className="bg-white dark:bg-gray-800 p-3 shadow-md rounded-md border border-gray-200 dark:border-gray-700">
-          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{date}</p>
-          {dataPoint.actual !== null && dataPoint.actual !== undefined && (
-            <p className="text-sm">
-              <span className="font-medium text-blue-500 dark:text-blue-400">Actual:</span> 
-              <span className="ml-1">${dataPoint.actual.toFixed(2)}</span>
-            </p>
-          )}
-          {dataPoint.predicted !== null && dataPoint.predicted !== undefined && (
-            <p className="text-sm">
-              <span className="font-medium text-green-500 dark:text-green-400">Predicted:</span>
-              <span className="ml-1">${dataPoint.predicted.toFixed(2)}</span>
-            </p>
-          )}
-        </div>
-      );
+  // Chart configuration for colors
+  const chartConfig = {
+    actual: {
+      label: "Historical",
+      theme: {
+        light: "#3B82F6",
+        dark: "#60A5FA",
+      }
+    },
+    predicted: {
+      label: "Prediction",
+      theme: {
+        light: "#4DA1A9",
+        dark: "#5EBFC9",
+      }
     }
-    return null;
   };
 
   return (
@@ -85,7 +82,7 @@ const PredictionChart: React.FC<PredictionChartProps> = ({ prediction }) => {
         </div>
       </div>
       
-      <ResponsiveContainer width="100%" height="80%">
+      <ChartContainer config={chartConfig} className="h-[80%]">
         <LineChart data={combinedData} margin={{ top: 5, right: 20, bottom: 25, left: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#ccc" opacity={0.2} />
           <XAxis 
@@ -99,24 +96,33 @@ const PredictionChart: React.FC<PredictionChartProps> = ({ prediction }) => {
             tick={{ fontSize: 12, fill: '#888' }}
             domain={['auto', 'auto']}
           />
-          <Tooltip content={<CustomTooltip />} />
-          <Legend verticalAlign="bottom" height={36} />
+          <ChartTooltip 
+            content={
+              <ChartTooltipContent 
+                formatter={(value, name) => {
+                  return [`$${Number(value).toFixed(2)}`, name === 'actual' ? 'Historical' : 'Prediction'];
+                }}
+                labelFormatter={(label) => format(parseISO(String(label)), 'MMM dd, yyyy')}
+              />
+            } 
+          />
+          <Legend />
           <Line 
             type="monotone" 
             dataKey="actual" 
-            stroke="#3B82F6" 
+            stroke="var(--color-actual)" 
             strokeWidth={2}
             dot={false}
-            name="Historical"
+            name="actual"
           />
           <Line 
             type="monotone" 
             dataKey="predicted" 
-            stroke="#4DA1A9" 
+            stroke="var(--color-predicted)" 
             strokeWidth={2} 
             strokeDasharray="5 5"
             dot={false}
-            name="Prediction"
+            name="predicted"
             isAnimationActive={true}
           />
           {predictionStartDate && (
@@ -128,7 +134,7 @@ const PredictionChart: React.FC<PredictionChartProps> = ({ prediction }) => {
             />
           )}
         </LineChart>
-      </ResponsiveContainer>
+      </ChartContainer>
     </div>
   );
 };

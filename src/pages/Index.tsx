@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import Header from '@/components/Header';
 import StockSearch from '@/components/StockSearch';
 import PredictionChart from '@/components/PredictionChart';
+import TechnicalIndicatorsChart from '@/components/TechnicalIndicatorsChart';
 import PredictionMetrics from '@/components/PredictionMetrics';
 import Footer from '@/components/Footer';
 import ChatSupportButton from '@/components/ChatSupportButton';
@@ -73,6 +74,7 @@ const Index = () => {
         {!isLoading && prediction && (
           <div className="space-y-8">
             <PredictionChart prediction={prediction} />
+            <TechnicalIndicatorsChart prediction={prediction} />
             <PredictionMetrics prediction={prediction} />
             
             {/* Future Todo: Add detailed analysis component */}
