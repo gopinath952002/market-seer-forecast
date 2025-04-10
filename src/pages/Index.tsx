@@ -9,23 +9,57 @@ import Footer from '@/components/Footer';
 import ChatSupportButton from '@/components/ChatSupportButton';
 import ChatDialog from '@/components/ChatDialog';
 import { getStockPrediction, StockPrediction } from '@/utils/mockData';
-import { AlertTriangle, ChevronDown } from 'lucide-react';
+import { AlertTriangle, ChevronDown, Database } from 'lucide-react';
+import { useStockData } from '@/services/stockApi';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 const Index = () => {
   const [prediction, setPrediction] = useState<StockPrediction | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [currentTicker, setCurrentTicker] = useState<string>('');
+  const [useRealApi, setUseRealApi] = useState(false);
   const [showDisclaimer, setShowDisclaimer] = useState(true);
   
+  // Set up the React Query hook
+  const { data: apiData, isLoading: isApiLoading, error } = useStockData(
+    currentTicker, 
+    useRealApi && !!currentTicker
+  );
+  
   const handleSearch = (ticker: string) => {
-    setIsLoading(true);
+    setCurrentTicker(ticker);
     
-    // Simulate API call with a delay
-    setTimeout(() => {
-      const result = getStockPrediction(ticker);
-      setPrediction(result);
-      setIsLoading(false);
-    }, 1500);
+    if (useRealApi) {
+      // API fetching happens through the React Query hook
+      // The UI will update when the data loads
+    } else {
+      // Use mock data
+      // Simulate API call with a delay
+      setPrediction(null);
+      
+      setTimeout(() => {
+        const result = getStockPrediction(ticker);
+        setPrediction(result);
+      }, 1500);
+    }
   };
+  
+  // Update prediction when API data loads
+  React.useEffect(() => {
+    if (apiData) {
+      setPrediction(apiData);
+    }
+  }, [apiData]);
+  
+  // Handle API errors
+  React.useEffect(() => {
+    if (error) {
+      console.error('API Error:', error);
+    }
+  }, [error]);
+  
+  // Determine if we're in a loading state
+  const isLoading = useRealApi ? isApiLoading : (currentTicker && !prediction);
   
   return (
     <div className="flex flex-col min-h-screen">
@@ -56,8 +90,20 @@ const Index = () => {
           </div>
         )}
         
+        {/* API Switch */}
+        <div className="mb-4 flex items-center justify-end gap-2">
+          <Label htmlFor="api-mode" className="text-sm text-gray-500">
+            Use Live API
+          </Label>
+          <Switch
+            id="api-mode"
+            checked={useRealApi}
+            onCheckedChange={setUseRealApi}
+          />
+        </div>
+        
         <div className="mb-8">
-          <StockSearch onSearch={handleSearch} />
+          <StockSearch onSearch={handleSearch} isRealApi={useRealApi} />
         </div>
         
         {isLoading && (
@@ -66,7 +112,7 @@ const Index = () => {
               <div className="absolute inset-0 rounded-full border-4 border-t-finance-blue dark:border-t-finance-teal border-gray-200 dark:border-gray-700 animate-spin"></div>
             </div>
             <p className="mt-4 text-gray-600 dark:text-gray-400">
-              Processing data and generating predictions...
+              {useRealApi ? 'Fetching live data and generating predictions...' : 'Processing data and generating predictions...'}
             </p>
           </div>
         )}
@@ -77,15 +123,28 @@ const Index = () => {
             <TechnicalIndicatorsChart prediction={prediction} />
             <PredictionMetrics prediction={prediction} />
             
-            {/* Future Todo: Add detailed analysis component */}
-            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-6 text-center border border-dashed border-gray-300 dark:border-gray-700">
-              <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
-                API Integration Coming Soon
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-                In the next version, this app will connect to a real backend API that uses TensorFlow LSTM models to generate predictions based on real stock data.
-              </p>
-            </div>
+            {!useRealApi && (
+              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-6 text-center border border-dashed border-gray-300 dark:border-gray-700">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <Database className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                  <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">
+                    Try the Live API
+                  </h3>
+                </div>
+                <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                  Toggle the "Use Live API" switch above to fetch real stock data from Alpha Vantage API.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+        
+        {!isLoading && !prediction && error && (
+          <div className="bg-red-50 dark:bg-red-900/20 p-6 rounded-lg border border-red-200 dark:border-red-800">
+            <h3 className="text-lg font-medium text-red-800 dark:text-red-400 mb-2">API Error</h3>
+            <p className="text-red-700 dark:text-red-300">
+              There was a problem fetching stock data. Please try again later or try a different ticker symbol.
+            </p>
           </div>
         )}
       </main>

@@ -3,14 +3,15 @@ import React, { useState } from 'react';
 import { Search, TrendingUp, Clock } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { mockStockInfo, popularTickers } from '@/utils/mockData';
 
 interface StockSearchProps {
   onSearch: (ticker: string) => void;
+  isRealApi?: boolean;
 }
 
-const StockSearch: React.FC<StockSearchProps> = ({ onSearch }) => {
+const StockSearch: React.FC<StockSearchProps> = ({ onSearch, isRealApi = false }) => {
   const [ticker, setTicker] = useState('');
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const { toast } = useToast();
@@ -27,7 +28,8 @@ const StockSearch: React.FC<StockSearchProps> = ({ onSearch }) => {
     
     const upperTicker = ticker.trim().toUpperCase();
     
-    if (!mockStockInfo[upperTicker]) {
+    // When using real API, skip this validation
+    if (!isRealApi && !mockStockInfo[upperTicker]) {
       toast({
         title: "Stock Not Found",
         description: `Could not find stock with ticker: ${upperTicker}`,
@@ -53,7 +55,14 @@ const StockSearch: React.FC<StockSearchProps> = ({ onSearch }) => {
 
   return (
     <div className="w-full max-w-3xl mx-auto bg-white dark:bg-gray-900 rounded-lg shadow-sm p-5">
-      <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Stock Price Prediction</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Stock Price Prediction</h2>
+        {isRealApi && (
+          <span className="px-2 py-1 text-xs bg-finance-blue/20 text-finance-blue dark:bg-finance-teal/20 dark:text-finance-teal rounded-full">
+            Live API
+          </span>
+        )}
+      </div>
       
       <div className="relative">
         <div className="flex gap-2">
