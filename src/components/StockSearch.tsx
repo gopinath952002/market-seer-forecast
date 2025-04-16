@@ -91,11 +91,11 @@ const StockSearch: React.FC<StockSearchProps> = ({ onSearch, isRealApi = false }
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto bg-white dark:bg-gray-900 rounded-lg shadow-sm p-5">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Stock Price Prediction</h2>
+    <div className="w-full max-w-3xl mx-auto glass-card rounded-xl shadow-lg p-6 border border-white/20 dark:border-gray-800/50">
+      <div className="flex justify-between items-center mb-5">
+        <h2 className="text-2xl font-bold text-finance-blue dark:text-finance-teal bg-clip-text">Stock Price Prediction</h2>
         {isRealApi && (
-          <span className="px-2 py-1 text-xs bg-finance-blue/20 text-finance-blue dark:bg-finance-teal/20 dark:text-finance-teal rounded-full">
+          <span className="px-3 py-1 text-xs bg-gradient-to-r from-finance-blue to-accent text-white dark:from-finance-teal dark:to-accent rounded-full shadow-sm">
             Live API
           </span>
         )}
@@ -110,7 +110,7 @@ const StockSearch: React.FC<StockSearchProps> = ({ onSearch, isRealApi = false }
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 dark:text-gray-400" />
                   <Input
                     ref={inputRef}
-                    className="pl-9 pr-8"
+                    className="pl-9 pr-8 border-finance-blue/20 dark:border-finance-teal/20 focus:border-finance-blue dark:focus:border-finance-teal transition-all duration-300"
                     placeholder="Search by ticker or company name"
                     value={ticker}
                     onChange={(e) => setTicker(e.target.value)}
@@ -119,7 +119,7 @@ const StockSearch: React.FC<StockSearchProps> = ({ onSearch, isRealApi = false }
                   />
                   {ticker && (
                     <button 
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                       onClick={clearSearch}
                     >
                       <X className="h-4 w-4" />
@@ -128,7 +128,7 @@ const StockSearch: React.FC<StockSearchProps> = ({ onSearch, isRealApi = false }
                   )}
                 </div>
               </PopoverTrigger>
-              <PopoverContent className="p-0 w-[300px]" align="start">
+              <PopoverContent className="p-0 w-[300px] border border-blue-100 dark:border-blue-900 shadow-lg" align="start">
                 <Command>
                   <CommandList>
                     {filteredStocks.length > 0 ? (
@@ -138,10 +138,10 @@ const StockSearch: React.FC<StockSearchProps> = ({ onSearch, isRealApi = false }
                             key={stock}
                             value={stock}
                             onSelect={() => handleSearch(stock)}
-                            className="flex justify-between cursor-pointer"
+                            className="flex justify-between cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/30"
                           >
                             <span className="font-medium">{stock}</span>
-                            <span className="text-gray-500 truncate max-w-[180px]">
+                            <span className="text-gray-500 dark:text-gray-400 truncate max-w-[180px]">
                               {mockStockInfo[stock].name}
                             </span>
                           </CommandItem>
@@ -156,7 +156,7 @@ const StockSearch: React.FC<StockSearchProps> = ({ onSearch, isRealApi = false }
             </Popover>
           </div>
           <Button 
-            className="bg-finance-blue hover:bg-finance-blue-light dark:bg-finance-teal dark:hover:bg-finance-teal/90"
+            className="gradient-button shadow-md"
             onClick={() => handleSearch()}
           >
             Predict
@@ -164,11 +164,11 @@ const StockSearch: React.FC<StockSearchProps> = ({ onSearch, isRealApi = false }
         </div>
       </div>
       
-      <div className="mt-4 flex flex-col gap-4">
+      <div className="mt-5 flex flex-col gap-5">
         {/* Recent searches */}
         {recentSearches.length > 0 && (
           <div>
-            <div className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 mb-2">
+            <div className="flex items-center gap-1.5 text-sm text-finance-blue dark:text-finance-teal mb-2">
               <Clock className="h-3.5 w-3.5" />
               <span>Recent Searches</span>
             </div>
@@ -176,11 +176,11 @@ const StockSearch: React.FC<StockSearchProps> = ({ onSearch, isRealApi = false }
               {recentSearches.map(item => (
                 <button
                   key={item}
-                  className="px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md flex items-center gap-1.5"
+                  className="px-3 py-1.5 text-sm bg-blue-50/80 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-800/50 rounded-md flex items-center gap-1.5 transition-all duration-200 border border-blue-100/50 dark:border-blue-800/50"
                   onClick={() => onSearch(item)}
                 >
                   <span>{item}</span>
-                  <span className="text-xs text-gray-500 truncate max-w-[120px]">
+                  <span className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[120px]">
                     {mockStockInfo[item]?.name && `(${mockStockInfo[item].name.split(' ')[0]})`}
                   </span>
                 </button>
@@ -191,7 +191,7 @@ const StockSearch: React.FC<StockSearchProps> = ({ onSearch, isRealApi = false }
         
         {/* Popular stocks */}
         <div>
-          <div className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 mb-2">
+          <div className="flex items-center gap-1.5 text-sm text-finance-blue dark:text-finance-teal mb-2">
             <TrendingUp className="h-3.5 w-3.5" />
             <span>Popular Stocks</span>
           </div>
@@ -199,11 +199,11 @@ const StockSearch: React.FC<StockSearchProps> = ({ onSearch, isRealApi = false }
             {popularTickers.map(ticker => (
               <button
                 key={ticker}
-                className="px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md flex items-center gap-1.5"
+                className="px-3 py-1.5 text-sm bg-blue-50/80 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-800/50 rounded-md flex items-center gap-1.5 transition-all duration-200 border border-blue-100/50 dark:border-blue-800/50"
                 onClick={() => onSearch(ticker)}
               >
                 <span>{ticker}</span>
-                <span className="text-xs text-gray-500 truncate max-w-[120px]">
+                <span className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[120px]">
                   {mockStockInfo[ticker]?.name && `(${mockStockInfo[ticker].name.split(' ')[0]})`}
                 </span>
               </button>
