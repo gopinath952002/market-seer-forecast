@@ -119,14 +119,70 @@ export const generatePredictions = (
 };
 
 export const mockStockInfo: Record<string, { name: string; basePrice: number }> = {
+  // Tech Companies
   'AAPL': { name: 'Apple Inc.', basePrice: 173.50 },
   'MSFT': { name: 'Microsoft Corporation', basePrice: 329.80 },
-  'TSLA': { name: 'Tesla, Inc.', basePrice: 251.45 },
-  'AMZN': { name: 'Amazon.com, Inc.', basePrice: 139.75 },
   'GOOG': { name: 'Alphabet Inc.', basePrice: 132.60 },
+  'GOOGL': { name: 'Alphabet Inc. Class A', basePrice: 131.85 },
+  'AMZN': { name: 'Amazon.com, Inc.', basePrice: 139.75 },
   'META': { name: 'Meta Platforms, Inc.', basePrice: 302.85 },
-  'NFLX': { name: 'Netflix, Inc.', basePrice: 434.20 },
+  'TSLA': { name: 'Tesla, Inc.', basePrice: 251.45 },
   'NVDA': { name: 'NVIDIA Corporation', basePrice: 432.50 },
+  'NFLX': { name: 'Netflix, Inc.', basePrice: 434.20 },
+  'INTC': { name: 'Intel Corporation', basePrice: 35.20 },
+  'AMD': { name: 'Advanced Micro Devices, Inc.', basePrice: 108.45 },
+  'CSCO': { name: 'Cisco Systems, Inc.', basePrice: 48.75 },
+  'ADBE': { name: 'Adobe Inc.', basePrice: 412.30 },
+  'CRM': { name: 'Salesforce, Inc.', basePrice: 251.90 },
+  'PYPL': { name: 'PayPal Holdings, Inc.', basePrice: 62.80 },
+
+  // Financial Companies
+  'JPM': { name: 'JPMorgan Chase & Co.', basePrice: 141.20 },
+  'BAC': { name: 'Bank of America Corporation', basePrice: 33.45 },
+  'WFC': { name: 'Wells Fargo & Company', basePrice: 43.60 },
+  'C': { name: 'Citigroup Inc.', basePrice: 52.70 },
+  'GS': { name: 'The Goldman Sachs Group, Inc.', basePrice: 368.50 },
+  'MS': { name: 'Morgan Stanley', basePrice: 87.90 },
+  'V': { name: 'Visa Inc.', basePrice: 235.40 },
+  'MA': { name: 'Mastercard Incorporated', basePrice: 371.60 },
+  'AXP': { name: 'American Express Company', basePrice: 169.30 },
+  'BLK': { name: 'BlackRock, Inc.', basePrice: 715.20 },
+  
+  // Healthcare Companies
+  'JNJ': { name: 'Johnson & Johnson', basePrice: 162.40 },
+  'PFE': { name: 'Pfizer Inc.', basePrice: 30.25 },
+  'ABBV': { name: 'AbbVie Inc.', basePrice: 167.85 },
+  'MRK': { name: 'Merck & Co., Inc.', basePrice: 124.70 },
+  'UNH': { name: 'UnitedHealth Group Incorporated', basePrice: 515.30 },
+  'CVS': { name: 'CVS Health Corporation', basePrice: 75.60 },
+  'ABT': { name: 'Abbott Laboratories', basePrice: 111.20 },
+  'TMO': { name: 'Thermo Fisher Scientific Inc.', basePrice: 575.40 },
+  'DHR': { name: 'Danaher Corporation', basePrice: 248.90 },
+  'LLY': { name: 'Eli Lilly and Company', basePrice: 482.70 },
+  
+  // Consumer Goods & Retail
+  'WMT': { name: 'Walmart Inc.', basePrice: 59.60 },
+  'PG': { name: 'The Procter & Gamble Company', basePrice: 162.35 },
+  'KO': { name: 'The Coca-Cola Company', basePrice: 58.70 },
+  'PEP': { name: 'PepsiCo, Inc.', basePrice: 172.80 },
+  'COST': { name: 'Costco Wholesale Corporation', basePrice: 564.30 },
+  'MCD': { name: 'McDonald\'s Corporation', basePrice: 285.90 },
+  'NKE': { name: 'NIKE, Inc.', basePrice: 103.40 },
+  'SBUX': { name: 'Starbucks Corporation', basePrice: 95.70 },
+  'HD': { name: 'The Home Depot, Inc.', basePrice: 337.80 },
+  'TGT': { name: 'Target Corporation', basePrice: 141.35 },
+  
+  // Industrial & Energy
+  'XOM': { name: 'Exxon Mobil Corporation', basePrice: 112.80 },
+  'CVX': { name: 'Chevron Corporation', basePrice: 160.25 },
+  'BA': { name: 'The Boeing Company', basePrice: 188.30 },
+  'CAT': { name: 'Caterpillar Inc.', basePrice: 278.45 },
+  'GE': { name: 'General Electric Company', basePrice: 124.60 },
+  'MMM': { name: '3M Company', basePrice: 102.30 },
+  'HON': { name: 'Honeywell International Inc.', basePrice: 201.75 },
+  'UPS': { name: 'United Parcel Service, Inc.', basePrice: 153.40 },
+  'RTX': { name: 'RTX Corporation', basePrice: 87.65 },
+  'DE': { name: 'Deere & Company', basePrice: 398.20 }
 };
 
 export const getStockPrediction = (ticker: string): StockPrediction | null => {
@@ -191,4 +247,8 @@ export const getStockPrediction = (ticker: string): StockPrediction | null => {
   };
 };
 
-export const popularTickers = Object.keys(mockStockInfo).slice(0, 5);
+// Update popular tickers to show more options
+export const popularTickers = [
+  'AAPL', 'MSFT', 'GOOG', 'AMZN', 'META', 'TSLA', 'NVDA', 'JPM', 'JNJ', 'WMT'
+];
+

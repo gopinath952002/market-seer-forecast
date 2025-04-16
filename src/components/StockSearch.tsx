@@ -1,10 +1,23 @@
 
-import React, { useState } from 'react';
-import { Search, TrendingUp, Clock } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Search, TrendingUp, Clock, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { mockStockInfo, popularTickers } from '@/utils/mockData';
+import { 
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList
+} from '@/components/ui/command';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 
 interface StockSearchProps {
   onSearch: (ticker: string) => void;
@@ -14,10 +27,28 @@ interface StockSearchProps {
 const StockSearch: React.FC<StockSearchProps> = ({ onSearch, isRealApi = false }) => {
   const [ticker, setTicker] = useState('');
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [open, setOpen] = useState(false);
+  const [filteredStocks, setFilteredStocks] = useState<string[]>([]);
   const { toast } = useToast();
+  const inputRef = useRef<HTMLInputElement>(null);
   
-  const handleSearch = () => {
-    if (!ticker.trim()) {
+  // Filter stocks based on input
+  useEffect(() => {
+    if (ticker.trim()) {
+      const filtered = Object.keys(mockStockInfo).filter(
+        stock => stock.includes(ticker.toUpperCase()) || 
+                mockStockInfo[stock].name.toUpperCase().includes(ticker.toUpperCase())
+      ).slice(0, 10); // Limit to 10 results for performance
+      setFilteredStocks(filtered);
+    } else {
+      setFilteredStocks([]);
+    }
+  }, [ticker]);
+  
+  const handleSearch = (selectedTicker: string = ticker) => {
+    const upperTicker = selectedTicker.trim().toUpperCase();
+    
+    if (!upperTicker) {
       toast({
         title: "Empty Search",
         description: "Please enter a stock ticker symbol",
@@ -25,8 +56,6 @@ const StockSearch: React.FC<StockSearchProps> = ({ onSearch, isRealApi = false }
       });
       return;
     }
-    
-    const upperTicker = ticker.trim().toUpperCase();
     
     // When using real API, skip this validation
     if (!isRealApi && !mockStockInfo[upperTicker]) {
@@ -40,16 +69,24 @@ const StockSearch: React.FC<StockSearchProps> = ({ onSearch, isRealApi = false }
     
     // Add to recent searches (no duplicates)
     if (!recentSearches.includes(upperTicker)) {
-      setRecentSearches(prev => [upperTicker, ...prev].slice(0, 3));
+      setRecentSearches(prev => [upperTicker, ...prev].slice(0, 5));
     }
     
     onSearch(upperTicker);
     setTicker('');
+    setOpen(false);
   };
   
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleSearch();
+    }
+  };
+
+  const clearSearch = () => {
+    setTicker('');
+    if (inputRef.current) {
+      inputRef.current.focus();
     }
   };
 
@@ -67,18 +104,60 @@ const StockSearch: React.FC<StockSearchProps> = ({ onSearch, isRealApi = false }
       <div className="relative">
         <div className="flex gap-2">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 dark:text-gray-400" />
-            <Input
-              className="pl-9"
-              placeholder="Enter stock ticker (e.g., AAPL, TSLA)"
-              value={ticker}
-              onChange={(e) => setTicker(e.target.value.toUpperCase())}
-              onKeyDown={handleKeyDown}
-            />
+            <Popover open={open && filteredStocks.length > 0} onOpenChange={setOpen}>
+              <PopoverTrigger asChild>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 dark:text-gray-400" />
+                  <Input
+                    ref={inputRef}
+                    className="pl-9 pr-8"
+                    placeholder="Search by ticker or company name"
+                    value={ticker}
+                    onChange={(e) => setTicker(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    onClick={() => ticker.trim() && setOpen(true)}
+                  />
+                  {ticker && (
+                    <button 
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                      onClick={clearSearch}
+                    >
+                      <X className="h-4 w-4" />
+                      <span className="sr-only">Clear</span>
+                    </button>
+                  )}
+                </div>
+              </PopoverTrigger>
+              <PopoverContent className="p-0 w-[300px]" align="start">
+                <Command>
+                  <CommandList>
+                    {filteredStocks.length > 0 ? (
+                      <CommandGroup heading="Stocks">
+                        {filteredStocks.map((stock) => (
+                          <CommandItem
+                            key={stock}
+                            value={stock}
+                            onSelect={() => handleSearch(stock)}
+                            className="flex justify-between cursor-pointer"
+                          >
+                            <span className="font-medium">{stock}</span>
+                            <span className="text-gray-500 truncate max-w-[180px]">
+                              {mockStockInfo[stock].name}
+                            </span>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    ) : (
+                      <CommandEmpty>No stocks found</CommandEmpty>
+                    )}
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
           <Button 
             className="bg-finance-blue hover:bg-finance-blue-light dark:bg-finance-teal dark:hover:bg-finance-teal/90"
-            onClick={handleSearch}
+            onClick={() => handleSearch()}
           >
             Predict
           </Button>
@@ -97,10 +176,13 @@ const StockSearch: React.FC<StockSearchProps> = ({ onSearch, isRealApi = false }
               {recentSearches.map(item => (
                 <button
                   key={item}
-                  className="px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md"
+                  className="px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md flex items-center gap-1.5"
                   onClick={() => onSearch(item)}
                 >
-                  {item}
+                  <span>{item}</span>
+                  <span className="text-xs text-gray-500 truncate max-w-[120px]">
+                    {mockStockInfo[item]?.name && `(${mockStockInfo[item].name.split(' ')[0]})`}
+                  </span>
                 </button>
               ))}
             </div>
@@ -117,10 +199,13 @@ const StockSearch: React.FC<StockSearchProps> = ({ onSearch, isRealApi = false }
             {popularTickers.map(ticker => (
               <button
                 key={ticker}
-                className="px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md"
+                className="px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md flex items-center gap-1.5"
                 onClick={() => onSearch(ticker)}
               >
-                {ticker}
+                <span>{ticker}</span>
+                <span className="text-xs text-gray-500 truncate max-w-[120px]">
+                  {mockStockInfo[ticker]?.name && `(${mockStockInfo[ticker].name.split(' ')[0]})`}
+                </span>
               </button>
             ))}
           </div>
