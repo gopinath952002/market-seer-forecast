@@ -13,6 +13,7 @@ import { AlertTriangle, ChevronDown, Database, BookOpen } from 'lucide-react';
 import { useStockData } from '@/services/stockApi';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Toaster } from '@/components/ui/toaster';
 
 const Index = () => {
   const [prediction, setPrediction] = useState<StockPrediction | null>(null);
@@ -206,6 +207,7 @@ const Index = () => {
       {/* Chat support components */}
       <ChatSupportButton />
       <ChatDialog />
+      <Toaster />
     </div>
   );
 };
