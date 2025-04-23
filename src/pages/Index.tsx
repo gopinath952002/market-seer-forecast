@@ -9,7 +9,7 @@ import Footer from '@/components/Footer';
 import ChatSupportButton from '@/components/ChatSupportButton';
 import ChatDialog from '@/components/ChatDialog';
 import { getStockPrediction, StockPrediction } from '@/utils/mockData';
-import { AlertTriangle, ChevronDown, Database } from 'lucide-react';
+import { AlertTriangle, ChevronDown, Database, BookOpen } from 'lucide-react';
 import { useStockData } from '@/services/stockApi';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -128,6 +128,51 @@ const Index = () => {
             </div>
             <div className="hover-scale">
               <PredictionMetrics prediction={prediction} />
+            </div>
+            
+            {/* Educational Resources Section */}
+            <div className="glass-card rounded-lg p-6 border border-blue-200/50 dark:border-blue-500/20 hover-scale">
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <BookOpen className="h-5 w-5 text-finance-blue dark:text-finance-teal" />
+                <h3 className="text-lg font-medium text-finance-blue dark:text-finance-teal">
+                  Learn More About Technical Analysis
+                </h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <a 
+                  href="https://www.investopedia.com/terms/r/rsi.asp" 
+                  target="_blank"
+                  rel="noopener noreferrer" 
+                  className="p-4 bg-white/80 dark:bg-gray-800/80 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-500 transition-colors"
+                >
+                  <h4 className="font-medium mb-2">Understanding RSI</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Learn how the Relative Strength Index helps identify overbought and oversold conditions.
+                  </p>
+                </a>
+                <a 
+                  href="https://www.investopedia.com/terms/m/macd.asp" 
+                  target="_blank"
+                  rel="noopener noreferrer" 
+                  className="p-4 bg-white/80 dark:bg-gray-800/80 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-500 transition-colors"
+                >
+                  <h4 className="font-medium mb-2">MACD Explained</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Discover how Moving Average Convergence Divergence shows momentum changes in price.
+                  </p>
+                </a>
+                <a 
+                  href="https://www.investopedia.com/terms/b/bollingerbands.asp" 
+                  target="_blank"
+                  rel="noopener noreferrer" 
+                  className="p-4 bg-white/80 dark:bg-gray-800/80 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-500 transition-colors"
+                >
+                  <h4 className="font-medium mb-2">Bollinger Bands Guide</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Learn how Bollinger Bands help visualize volatility and potential reversals.
+                  </p>
+                </a>
+              </div>
             </div>
             
             {!useRealApi && (
