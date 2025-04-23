@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { StockPrediction } from '@/utils/mockData';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -53,7 +54,7 @@ const TechnicalIndicatorsChart: React.FC<TechnicalIndicatorsChartProps> = ({ pre
         <TabsContent value="bollinger" className="h-full">
           <IndicatorChartContainer 
             title="Bollinger Bands" 
-            description="Bollinger Bands show volatility and potential reversals"
+            description="Bollinger Bands show volatility and potential price reversals using standard deviations"
           >
             <BollingerBandsChart bollingerData={bollingerData} />
           </IndicatorChartContainer>

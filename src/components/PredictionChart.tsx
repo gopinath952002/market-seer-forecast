@@ -1,31 +1,43 @@
+
 import React from 'react';
 import { format, parseISO } from 'date-fns';
 import { StockPrediction } from '@/utils/mockData';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, 
-  Tooltip, ResponsiveContainer, ReferenceLine, Legend 
+  ResponsiveContainer, ReferenceLine, Legend, Area, Tooltip
 } from 'recharts';
 import { 
   ChartContainer, 
   ChartTooltip, 
   ChartTooltipContent
 } from '@/components/ui/chart';
+import { addConfidenceIntervals } from './technical-indicators/indicatorUtils';
 
 interface PredictionChartProps {
   prediction: StockPrediction;
 }
 
 const PredictionChart: React.FC<PredictionChartProps> = ({ prediction }) => {
+  // Add confidence intervals to prediction data
+  const enhancedPredictionData = addConfidenceIntervals(prediction);
+  
   const combinedData = [
     ...prediction.historicalData.map(item => ({
       date: item.date,
       actual: item.price,
-      predicted: null
+      predicted: null,
+      lowerBound: null,
+      upperBound: null,
+      isHistorical: true
     })),
-    ...prediction.predictionData.map(item => ({
+    ...enhancedPredictionData.map(item => ({
       date: item.date,
       actual: item.actual,
-      predicted: item.predicted
+      predicted: item.predicted,
+      lowerBound: item.lowerBound,
+      upperBound: item.upperBound,
+      confidenceInterval: item.confidenceInterval,
+      isPrediction: true
     }))
   ].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
@@ -53,6 +65,13 @@ const PredictionChart: React.FC<PredictionChartProps> = ({ prediction }) => {
       theme: {
         light: "#4DA1A9",
         dark: "#5EBFC9",
+      }
+    },
+    confidenceBounds: {
+      label: "Confidence Interval",
+      theme: {
+        light: "rgba(77, 161, 169, 0.2)",
+        dark: "rgba(94, 191, 201, 0.2)",
       }
     }
   };
@@ -87,23 +106,61 @@ const PredictionChart: React.FC<PredictionChartProps> = ({ prediction }) => {
             tickFormatter={formatXAxis}
             tick={{ fontSize: 12, fill: '#888' }}
             padding={{ left: 10, right: 10 }}
+            label={{ value: 'Date (Historical → Prediction)', position: 'insideBottom', offset: -15, fontSize: 12 }}
           />
           <YAxis 
             tickFormatter={formatYAxis} 
             tick={{ fontSize: 12, fill: '#888' }}
             domain={['auto', 'auto']}
+            label={{ value: 'Price (USD)', angle: -90, position: 'insideLeft', offset: -5, fontSize: 12 }}
           />
           <ChartTooltip 
             content={
               <ChartTooltipContent 
-                formatter={(value, name) => {
-                  return [`$${Number(value).toFixed(2)}`, name === 'actual' ? 'Historical' : 'Prediction'];
+                formatter={(value: any, name: any) => {
+                  if (name === 'actual') return [`$${Number(value).toFixed(2)}`, 'Historical'];
+                  if (name === 'predicted') {
+                    const item = combinedData.find(item => item.date === name && item.predicted === value);
+                    const confInterval = item?.confidenceInterval;
+                    return [`$${Number(value).toFixed(2)} ± $${confInterval || '0.00'}`, 'Prediction'];
+                  }
+                  return [`$${Number(value).toFixed(2)}`, name];
                 }}
                 labelFormatter={(label) => format(parseISO(String(label)), 'MMM dd, yyyy')}
               />
             } 
           />
           <Legend />
+          
+          {/* Confidence interval area */}
+          <defs>
+            <linearGradient id="confidenceGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="var(--color-confidenceBounds)" stopOpacity={0.8}/>
+              <stop offset="95%" stopColor="var(--color-confidenceBounds)" stopOpacity={0.2}/>
+            </linearGradient>
+          </defs>
+          
+          <Area 
+            type="monotone"
+            dataKey="upperBound"
+            stroke="none"
+            fill="url(#confidenceGradient)"
+            fillOpacity={1}
+            name="upperBound"
+            activeDot={false}
+            legendType="none"
+          />
+          
+          <Area 
+            type="monotone"
+            dataKey="lowerBound"
+            stroke="none"
+            fillOpacity={0}
+            name="lowerBound"
+            activeDot={false}
+            legendType="none"
+          />
+          
           <Line 
             type="monotone" 
             dataKey="actual" 

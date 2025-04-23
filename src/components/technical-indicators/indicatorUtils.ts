@@ -5,7 +5,7 @@ import { StockPrediction } from '@/utils/mockData';
 export const prepareRSIData = (prediction: StockPrediction) => {
   const { historicalData, indicators } = prediction;
   
-  // Generate mock RSI values for demonstration
+  // Generate dynamic RSI values for demonstration
   return historicalData.slice(-30).map((item, index) => {
     const baseRsi = indicators.rsi;
     const fluctuation = Math.sin(index / 3) * 8;
@@ -22,7 +22,7 @@ export const prepareRSIData = (prediction: StockPrediction) => {
 export const prepareMACDData = (prediction: StockPrediction) => {
   const { historicalData, indicators } = prediction;
   
-  // Generate mock MACD values for demonstration
+  // Generate dynamic MACD values for demonstration
   return historicalData.slice(-30).map((item, index) => {
     const baseMACD = indicators.macd;
     const signal = baseMACD - 0.5 + (Math.sin(index / 4) * 0.7);
@@ -37,21 +37,89 @@ export const prepareMACDData = (prediction: StockPrediction) => {
   });
 };
 
-// Prepare Bollinger Bands data from prediction object
+// Prepare Bollinger Bands data from prediction object with dynamic values
 export const prepareBollingerData = (prediction: StockPrediction) => {
   const { historicalData, predictionData, indicators } = prediction;
   
+  // Standard deviation multiplier for Bollinger Bands
+  const stdDevMultiplier = 2;
+  
+  // Calculate historical volatility
+  const historicalPrices = historicalData.map(item => item.price);
+  const avgPrice = historicalPrices.reduce((sum, price) => sum + price, 0) / historicalPrices.length;
+  const variance = historicalPrices.reduce((sum, price) => sum + Math.pow(price - avgPrice, 2), 0) / historicalPrices.length;
+  const stdDev = Math.sqrt(variance);
+  
+  const baseVolatility = stdDev / avgPrice; // As a percentage of price
+  
   // Combine historical and prediction data
-  return [...historicalData.slice(-30), ...predictionData].map((item) => {
-    // Handle different types safely using type checking
-    const price = 'price' in item ? item.price : ('actual' in item && item.actual) || 0;
+  const combinedData = [...historicalData.slice(-30)];
+  const predictionStartDate = predictionData[0]?.date;
+  
+  // Process historical data
+  const result = combinedData.map((item, index) => {
+    const price = item.price;
+    const volatilityFactor = baseVolatility * (1 + Math.sin(index / 10) * 0.3);
+    const middleBand = price;
+    const bandWidth = price * volatilityFactor * stdDevMultiplier;
     
     return {
       date: item.date,
+      price,
+      upperBand: price + bandWidth,
+      lowerBand: price - bandWidth,
+      middleBand,
+      isPrediction: false
+    };
+  });
+  
+  // Add prediction data
+  predictionData.forEach(item => {
+    if (!item.predicted) return;
+    
+    // Increase volatility for predictions (wider bands indicate more uncertainty)
+    const price = 'actual' in item && item.actual ? item.actual : item.predicted;
+    const daysSincePredictionStart = new Date(item.date).getTime() - new Date(predictionStartDate).getTime();
+    const daysOffset = daysSincePredictionStart / (1000 * 60 * 60 * 24);
+    
+    // Volatility increases the further we predict
+    const volatilityFactor = baseVolatility * (1 + (daysOffset * 0.05));
+    const bandWidth = item.predicted * volatilityFactor * stdDevMultiplier;
+    
+    result.push({
+      date: item.date,
       price: price,
-      upperBand: indicators.bollingerUpper,
-      lowerBand: indicators.bollingerLower,
-      middleBand: (indicators.bollingerUpper + indicators.bollingerLower) / 2
+      predicted: item.predicted,
+      upperBand: item.predicted + bandWidth,
+      lowerBand: item.predicted - bandWidth,
+      middleBand: item.predicted,
+      isPrediction: true,
+      confidenceInterval: bandWidth.toFixed(2)
+    });
+  });
+  
+  return result;
+};
+
+// Generate confidence intervals for prediction data
+export const addConfidenceIntervals = (prediction: StockPrediction) => {
+  const { predictionData, metrics } = prediction;
+  
+  const baseConfidence = metrics.confidence;
+  const volatility = 1 - baseConfidence; // Higher confidence = lower volatility
+  
+  return predictionData.map((item, index) => {
+    if (!item.predicted) return item;
+    
+    // Increasing uncertainty over time
+    const volatilityFactor = volatility * (1 + (index * 0.1));
+    const interval = item.predicted * volatilityFactor * 0.05;
+    
+    return {
+      ...item,
+      confidenceInterval: interval.toFixed(2),
+      lowerBound: (item.predicted - interval).toFixed(2),
+      upperBound: (item.predicted + interval).toFixed(2)
     };
   });
 };
