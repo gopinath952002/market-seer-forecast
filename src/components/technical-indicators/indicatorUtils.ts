@@ -89,7 +89,7 @@ export const prepareBollingerData = (prediction: StockPrediction) => {
     result.push({
       date: item.date,
       price: price,
-      predictedPrice: item.predicted, // Changed from 'predicted' to 'predictedPrice'
+      predicted: item.predicted, // Changed from 'predictedPrice' to 'predicted' to match the object type
       upperBand: item.predicted + bandWidth,
       lowerBand: item.predicted - bandWidth,
       middleBand: item.predicted,
