@@ -1,4 +1,3 @@
-
 import { StockPrediction } from '@/utils/mockData';
 
 // Prepare RSI data from prediction object
@@ -89,7 +88,6 @@ export const prepareBollingerData = (prediction: StockPrediction) => {
     result.push({
       date: item.date,
       price: price,
-      predicted: item.predicted, // Changed from 'predictedPrice' to 'predicted' to match the object type
       upperBand: item.predicted + bandWidth,
       lowerBand: item.predicted - bandWidth,
       middleBand: item.predicted,
