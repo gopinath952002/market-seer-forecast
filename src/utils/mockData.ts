@@ -1,4 +1,3 @@
-
 // Generate realistic stock price data and predictions
 import { format, subDays } from 'date-fns';
 
@@ -119,7 +118,24 @@ export const generatePredictions = (
 };
 
 export const mockStockInfo: Record<string, { name: string; basePrice: number }> = {
-  // Tech Companies
+  // Indian Companies
+  'RELIANCE': { name: 'Reliance Industries Limited', basePrice: 2432.55 },
+  'TCS': { name: 'Tata Consultancy Services', basePrice: 3567.80 },
+  'INFY': { name: 'Infosys Limited', basePrice: 1432.65 },
+  'HDFCBANK': { name: 'HDFC Bank Limited', basePrice: 1678.90 },
+  'ICICIBANK': { name: 'ICICI Bank Limited', basePrice: 945.30 },
+  'SBIN': { name: 'State Bank of India', basePrice: 567.45 },
+  'WIPRO': { name: 'Wipro Limited', basePrice: 432.75 },
+  'HINDUNILVR': { name: 'Hindustan Unilever Limited', basePrice: 2567.80 },
+  'BHARTIARTL': { name: 'Bharti Airtel Limited', basePrice: 876.55 },
+  'TATAMOTORS': { name: 'Tata Motors Limited', basePrice: 654.30 },
+  'ASIANPAINT': { name: 'Asian Paints Limited', basePrice: 3245.60 },
+  'MARUTI': { name: 'Maruti Suzuki India Limited', basePrice: 9876.45 },
+  'ADANIENT': { name: 'Adani Enterprises Limited', basePrice: 2432.55 },
+  'BAJFINANCE': { name: 'Bajaj Finance Limited', basePrice: 6789.30 },
+  'ITC': { name: 'ITC Limited', basePrice: 432.65 },
+  
+  // US and other companies
   'AAPL': { name: 'Apple Inc.', basePrice: 173.50 },
   'MSFT': { name: 'Microsoft Corporation', basePrice: 329.80 },
   'GOOG': { name: 'Alphabet Inc.', basePrice: 132.60 },
@@ -247,8 +263,7 @@ export const getStockPrediction = (ticker: string): StockPrediction | null => {
   };
 };
 
-// Update popular tickers to show more options
+// Update popular tickers to include some Indian stocks
 export const popularTickers = [
-  'AAPL', 'MSFT', 'GOOG', 'AMZN', 'META', 'TSLA', 'NVDA', 'JPM', 'JNJ', 'WMT'
+  'AAPL', 'MSFT', 'RELIANCE', 'TCS', 'INFY', 'HDFCBANK', 'ICICIBANK', 'SBIN', 'TSLA', 'AMZN'
 ];
-
