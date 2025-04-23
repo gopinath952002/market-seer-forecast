@@ -1,3 +1,4 @@
+
 import { StockPrediction } from '@/utils/mockData';
 
 // Prepare RSI data from prediction object
@@ -36,6 +37,20 @@ export const prepareMACDData = (prediction: StockPrediction) => {
   });
 };
 
+// Define interfaces for Bollinger Bands data to fix the type issues
+interface BollingerHistoricalDataPoint {
+  date: string;
+  price: number;
+  upperBand: number;
+  lowerBand: number;
+  middleBand: number;
+  isPrediction: boolean;
+}
+
+interface BollingerPredictionDataPoint extends BollingerHistoricalDataPoint {
+  confidenceInterval: string;
+}
+
 // Prepare Bollinger Bands data from prediction object with dynamic values
 export const prepareBollingerData = (prediction: StockPrediction) => {
   const { historicalData, predictionData, indicators } = prediction;
@@ -56,7 +71,7 @@ export const prepareBollingerData = (prediction: StockPrediction) => {
   const predictionStartDate = predictionData[0]?.date;
   
   // Process historical data
-  const result = combinedData.map((item, index) => {
+  const result: (BollingerHistoricalDataPoint | BollingerPredictionDataPoint)[] = combinedData.map((item, index) => {
     const price = item.price;
     const volatilityFactor = baseVolatility * (1 + Math.sin(index / 10) * 0.3);
     const middleBand = price;
@@ -85,7 +100,7 @@ export const prepareBollingerData = (prediction: StockPrediction) => {
     const volatilityFactor = baseVolatility * (1 + (daysOffset * 0.05));
     const bandWidth = item.predicted * volatilityFactor * stdDevMultiplier;
     
-    result.push({
+    const predictionPoint: BollingerPredictionDataPoint = {
       date: item.date,
       price: price,
       upperBand: item.predicted + bandWidth,
@@ -93,7 +108,9 @@ export const prepareBollingerData = (prediction: StockPrediction) => {
       middleBand: item.predicted,
       isPrediction: true,
       confidenceInterval: bandWidth.toFixed(2)
-    });
+    };
+    
+    result.push(predictionPoint);
   });
   
   return result;
