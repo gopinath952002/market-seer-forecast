@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { format, parseISO } from 'date-fns';
 import { StockPrediction } from '@/utils/mockData';
@@ -30,7 +29,6 @@ const PredictionChart: React.FC<PredictionChartProps> = ({ prediction }) => {
     }))
   ].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-  // Find where predictions start (for reference line)
   const predictionStartIdx = combinedData.findIndex(item => item.predicted !== null);
   const predictionStartDate = predictionStartIdx !== -1 ? combinedData[predictionStartIdx].date : null;
 
@@ -42,7 +40,6 @@ const PredictionChart: React.FC<PredictionChartProps> = ({ prediction }) => {
     return `$${value.toFixed(0)}`;
   };
 
-  // Chart configuration for colors
   const chartConfig = {
     actual: {
       label: "Historical",
@@ -61,7 +58,7 @@ const PredictionChart: React.FC<PredictionChartProps> = ({ prediction }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm p-5 h-[400px]">
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm p-5 h-[400px] w-full max-w-3xl mx-auto mb-8">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-lg font-semibold">
