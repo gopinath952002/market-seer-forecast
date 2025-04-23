@@ -11,6 +11,9 @@ export interface PredictionData {
   date: string; // ISO date string
   actual?: number; // Historical actual price (if available)
   predicted: number;
+  confidenceInterval?: string; // Confidence interval for predictions
+  lowerBound?: string; // Lower bound of confidence interval
+  upperBound?: string; // Upper bound of confidence interval
 }
 
 export interface StockMetadata {
@@ -91,11 +94,15 @@ export const generatePredictions = (
     const item = historicalData[i];
     const error = (Math.random() * 2 - 1) * errorMargin;
     const predictedPrice = item.price * (1 + error);
+    const interval = predictedPrice * 0.02; // 2% confidence interval
     
     predictions.push({
       date: item.date,
       actual: item.price,
-      predicted: parseFloat(predictedPrice.toFixed(2))
+      predicted: parseFloat(predictedPrice.toFixed(2)),
+      confidenceInterval: interval.toFixed(2),
+      lowerBound: (predictedPrice - interval).toFixed(2),
+      upperBound: (predictedPrice + interval).toFixed(2)
     });
   }
   
@@ -107,10 +114,15 @@ export const generatePredictions = (
     const change = getRandomChange();
     lastPrice = lastPrice * (1 + change);
     const date = format(subDays(today, -i), 'yyyy-MM-dd');
+    const predictedPrice = parseFloat(lastPrice.toFixed(2));
+    const interval = predictedPrice * (0.02 + i * 0.005); // Growing uncertainty
     
     predictions.push({
       date,
-      predicted: parseFloat(lastPrice.toFixed(2))
+      predicted: predictedPrice,
+      confidenceInterval: interval.toFixed(2),
+      lowerBound: (predictedPrice - interval).toFixed(2),
+      upperBound: (predictedPrice + interval).toFixed(2)
     });
   }
   
@@ -118,7 +130,6 @@ export const generatePredictions = (
 };
 
 export const mockStockInfo: Record<string, { name: string; basePrice: number }> = {
-  // Indian Companies
   'RELIANCE': { name: 'Reliance Industries Limited', basePrice: 2432.55 },
   'TCS': { name: 'Tata Consultancy Services', basePrice: 3567.80 },
   'INFY': { name: 'Infosys Limited', basePrice: 1432.65 },
@@ -135,7 +146,6 @@ export const mockStockInfo: Record<string, { name: string; basePrice: number }> 
   'BAJFINANCE': { name: 'Bajaj Finance Limited', basePrice: 6789.30 },
   'ITC': { name: 'ITC Limited', basePrice: 432.65 },
   
-  // US and other companies
   'AAPL': { name: 'Apple Inc.', basePrice: 173.50 },
   'MSFT': { name: 'Microsoft Corporation', basePrice: 329.80 },
   'GOOG': { name: 'Alphabet Inc.', basePrice: 132.60 },
@@ -152,7 +162,6 @@ export const mockStockInfo: Record<string, { name: string; basePrice: number }> 
   'CRM': { name: 'Salesforce, Inc.', basePrice: 251.90 },
   'PYPL': { name: 'PayPal Holdings, Inc.', basePrice: 62.80 },
 
-  // Financial Companies
   'JPM': { name: 'JPMorgan Chase & Co.', basePrice: 141.20 },
   'BAC': { name: 'Bank of America Corporation', basePrice: 33.45 },
   'WFC': { name: 'Wells Fargo & Company', basePrice: 43.60 },
@@ -164,7 +173,6 @@ export const mockStockInfo: Record<string, { name: string; basePrice: number }> 
   'AXP': { name: 'American Express Company', basePrice: 169.30 },
   'BLK': { name: 'BlackRock, Inc.', basePrice: 715.20 },
   
-  // Healthcare Companies
   'JNJ': { name: 'Johnson & Johnson', basePrice: 162.40 },
   'PFE': { name: 'Pfizer Inc.', basePrice: 30.25 },
   'ABBV': { name: 'AbbVie Inc.', basePrice: 167.85 },
@@ -176,7 +184,6 @@ export const mockStockInfo: Record<string, { name: string; basePrice: number }> 
   'DHR': { name: 'Danaher Corporation', basePrice: 248.90 },
   'LLY': { name: 'Eli Lilly and Company', basePrice: 482.70 },
   
-  // Consumer Goods & Retail
   'WMT': { name: 'Walmart Inc.', basePrice: 59.60 },
   'PG': { name: 'The Procter & Gamble Company', basePrice: 162.35 },
   'KO': { name: 'The Coca-Cola Company', basePrice: 58.70 },
@@ -188,7 +195,6 @@ export const mockStockInfo: Record<string, { name: string; basePrice: number }> 
   'HD': { name: 'The Home Depot, Inc.', basePrice: 337.80 },
   'TGT': { name: 'Target Corporation', basePrice: 141.35 },
   
-  // Industrial & Energy
   'XOM': { name: 'Exxon Mobil Corporation', basePrice: 112.80 },
   'CVX': { name: 'Chevron Corporation', basePrice: 160.25 },
   'BA': { name: 'The Boeing Company', basePrice: 188.30 },
@@ -263,7 +269,6 @@ export const getStockPrediction = (ticker: string): StockPrediction | null => {
   };
 };
 
-// Update popular tickers to include some Indian stocks
 export const popularTickers = [
   'AAPL', 'MSFT', 'RELIANCE', 'TCS', 'INFY', 'HDFCBANK', 'ICICIBANK', 'SBIN', 'TSLA', 'AMZN'
 ];

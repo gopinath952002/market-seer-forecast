@@ -34,9 +34,9 @@ const PredictionChart: React.FC<PredictionChartProps> = ({ prediction }) => {
       date: item.date,
       actual: item.actual,
       predicted: item.predicted,
-      lowerBound: item.lowerBound,
-      upperBound: item.upperBound,
-      confidenceInterval: item.confidenceInterval,
+      lowerBound: item.lowerBound || null,
+      upperBound: item.upperBound || null,
+      confidenceInterval: item.confidenceInterval || null,
       isPrediction: true
     }))
   ].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -117,12 +117,15 @@ const PredictionChart: React.FC<PredictionChartProps> = ({ prediction }) => {
           <ChartTooltip 
             content={
               <ChartTooltipContent 
-                formatter={(value: any, name: any) => {
+                formatter={(value: any, name: any, entry: any) => {
                   if (name === 'actual') return [`$${Number(value).toFixed(2)}`, 'Historical'];
                   if (name === 'predicted') {
-                    const item = combinedData.find(item => item.date === name && item.predicted === value);
-                    const confInterval = item?.confidenceInterval;
-                    return [`$${Number(value).toFixed(2)} ± $${confInterval || '0.00'}`, 'Prediction'];
+                    const item = combinedData.find(item => 
+                      item.date === entry.payload.date && 
+                      item.predicted === value
+                    );
+                    const confInterval = item && 'confidenceInterval' in item ? item.confidenceInterval : null;
+                    return [`$${Number(value).toFixed(2)}${confInterval ? ` ± $${confInterval}` : ''}`, 'Prediction'];
                   }
                   return [`$${Number(value).toFixed(2)}`, name];
                 }}

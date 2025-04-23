@@ -89,7 +89,7 @@ export const prepareBollingerData = (prediction: StockPrediction) => {
     result.push({
       date: item.date,
       price: price,
-      predicted: item.predicted,
+      predictedPrice: item.predicted, // Changed from 'predicted' to 'predictedPrice'
       upperBand: item.predicted + bandWidth,
       lowerBand: item.predicted - bandWidth,
       middleBand: item.predicted,
@@ -110,6 +110,11 @@ export const addConfidenceIntervals = (prediction: StockPrediction) => {
   
   return predictionData.map((item, index) => {
     if (!item.predicted) return item;
+    
+    // If the item already has confidence intervals, return it as is
+    if (item.confidenceInterval && item.lowerBound && item.upperBound) {
+      return item;
+    }
     
     // Increasing uncertainty over time
     const volatilityFactor = volatility * (1 + (index * 0.1));
