@@ -39,16 +39,16 @@ const PredictionMetrics: React.FC<PredictionMetricsProps> = ({ prediction }) => 
   // Get risk level
   const riskLevel = calculateRiskLevel(prediction);
   
-  // Define color for risk level badge
+  // Define color for risk level badge - fixing the "warning" variant issue
   const riskBadgeVariant = 
     riskLevel === 'Low' ? "secondary" : 
-    riskLevel === 'Medium' ? "warning" : "destructive";
+    riskLevel === 'Medium' ? "outline" : "destructive";
 
   // Education context for indicators
   const rsiContext = getRSIEducationalContext(indicators.rsi);
   const macdContext = getMACDEducationalContext(indicators.macd);
   const bollingerContext = getBollingerEducationalContext(
-    metrics.currentPrice || prediction.metadata.currentPrice,
+    prediction.metadata.currentPrice, // Using metadata.currentPrice instead of metrics.currentPrice
     indicators.bollingerUpper,
     indicators.bollingerLower
   );
