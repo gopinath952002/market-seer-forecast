@@ -13,8 +13,8 @@ import { useStockData } from '@/services/stockApi';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Toaster } from '@/components/ui/toaster';
-import { supabase } from '@/utils/supabase';
-import { toast } from 'react-toastify';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 const Index = () => {
   const [prediction, setPrediction] = useState<StockPrediction | null>(null);
@@ -39,22 +39,26 @@ const Index = () => {
         const result = getStockPrediction(ticker);
         setPrediction(result);
 
-        // Store prediction in Supabase when authenticated
         try {
-          const { error } = await supabase
-            .from('stock_predictions')
-            .insert({
-              ticker,
-              predicted_direction: result.indicators.recommendation.toLowerCase(),
-              initial_price: result.metadata.currentPrice,
+          const { data: { user } } = await supabase.auth.getUser();
+          
+          if (user) {
+            const { error } = await supabase
+              .from('stock_predictions')
+              .insert({
+                ticker,
+                predicted_direction: result.indicators.recommendation.toLowerCase(),
+                initial_price: result.metadata.currentPrice,
+                user_id: user.id
+              });
+
+            if (error) throw error;
+
+            toast({
+              title: "Prediction Tracked",
+              description: "We'll notify you about significant price movements.",
             });
-
-          if (error) throw error;
-
-          toast({
-            title: "Prediction Tracked",
-            description: "We'll notify you about significant price movements.",
-          });
+          }
         } catch (error) {
           console.error('Error saving prediction:', error);
           toast({
