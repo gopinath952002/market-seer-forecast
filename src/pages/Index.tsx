@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Header from '@/components/Header';
 import StockSearch from '@/components/StockSearch';
@@ -14,6 +13,8 @@ import { useStockData } from '@/services/stockApi';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Toaster } from '@/components/ui/toaster';
+import { supabase } from '@/utils/supabase';
+import { toast } from 'react-toastify';
 
 const Index = () => {
   const [prediction, setPrediction] = useState<StockPrediction | null>(null);
@@ -21,45 +22,63 @@ const Index = () => {
   const [useRealApi, setUseRealApi] = useState(false);
   const [showDisclaimer, setShowDisclaimer] = useState(true);
   
-  // Set up the React Query hook
   const { data: apiData, isLoading: isApiLoading, error } = useStockData(
     currentTicker, 
     useRealApi && !!currentTicker
   );
   
-  const handleSearch = (ticker: string) => {
+  const handleSearch = async (ticker: string) => {
     setCurrentTicker(ticker);
     
     if (useRealApi) {
       // API fetching happens through the React Query hook
-      // The UI will update when the data loads
     } else {
-      // Use mock data
-      // Simulate API call with a delay
       setPrediction(null);
       
-      setTimeout(() => {
+      setTimeout(async () => {
         const result = getStockPrediction(ticker);
         setPrediction(result);
+
+        // Store prediction in Supabase when authenticated
+        try {
+          const { error } = await supabase
+            .from('stock_predictions')
+            .insert({
+              ticker,
+              predicted_direction: result.indicators.recommendation.toLowerCase(),
+              initial_price: result.metadata.currentPrice,
+            });
+
+          if (error) throw error;
+
+          toast({
+            title: "Prediction Tracked",
+            description: "We'll notify you about significant price movements.",
+          });
+        } catch (error) {
+          console.error('Error saving prediction:', error);
+          toast({
+            title: "Error",
+            description: "Failed to track prediction. Please try again.",
+            variant: "destructive",
+          });
+        }
       }, 1500);
     }
   };
   
-  // Update prediction when API data loads
   React.useEffect(() => {
     if (apiData) {
       setPrediction(apiData);
     }
   }, [apiData]);
   
-  // Handle API errors
   React.useEffect(() => {
     if (error) {
       console.error('API Error:', error);
     }
   }, [error]);
   
-  // Determine if we're in a loading state
   const isLoading = useRealApi ? isApiLoading : (currentTicker && !prediction);
   
   return (
@@ -67,7 +86,6 @@ const Index = () => {
       <Header />
       
       <main className="flex-1 container py-8 px-4 sm:px-6">
-        {/* Disclaimer banner */}
         {showDisclaimer && (
           <div className="glass-card bg-amber-50/80 dark:bg-amber-900/30 border-l-4 border-amber-500 p-4 mb-8 rounded-md">
             <div className="flex items-start">
@@ -91,7 +109,6 @@ const Index = () => {
           </div>
         )}
         
-        {/* API Switch */}
         <div className="mb-4 flex items-center justify-end gap-2">
           <Label htmlFor="api-mode" className="text-sm text-gray-600 dark:text-gray-300">
             Use Live API
@@ -131,7 +148,6 @@ const Index = () => {
               <PredictionMetrics prediction={prediction} />
             </div>
             
-            {/* Educational Resources Section */}
             <div className="glass-card rounded-lg p-6 border border-blue-200/50 dark:border-blue-500/20 hover-scale">
               <div className="flex items-center justify-center gap-2 mb-4">
                 <BookOpen className="h-5 w-5 text-finance-blue dark:text-finance-teal" />
@@ -204,7 +220,6 @@ const Index = () => {
       
       <Footer />
       
-      {/* Chat support components */}
       <ChatSupportButton />
       <ChatDialog />
       <Toaster />
