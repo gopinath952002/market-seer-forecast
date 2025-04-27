@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Disclaimer from "./pages/Disclaimer";
 import NotFound from "./pages/NotFound";
+import React from 'react'; // Explicitly import React
 
 const queryClient = new QueryClient();
 
