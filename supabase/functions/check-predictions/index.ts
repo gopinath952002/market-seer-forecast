@@ -24,13 +24,16 @@ serve(async (req) => {
     // Get unnotified predictions
     const { data: predictions, error: fetchError } = await supabase
       .from('stock_predictions')
-      .select('*, auth.users!inner(email)')
+      .select(`
+        *,
+        auth.users!inner(email)
+      `)
       .eq('notified', false)
 
     if (fetchError) throw fetchError
 
     for (const prediction of predictions) {
-      // Fetch current stock price (mock for now, replace with real API)
+      // Get current stock price (mock for demo)
       const currentPrice = prediction.initial_price * (1 + (Math.random() - 0.5) * 0.1)
       const priceChange = ((currentPrice - prediction.initial_price) / prediction.initial_price) * 100
       const direction = priceChange > 0 ? 'up' : 'down'
@@ -39,13 +42,14 @@ serve(async (req) => {
       await resend.emails.send({
         from: 'Stock Predictions <onboarding@resend.dev>',
         to: prediction.users.email,
-        subject: `Your Stock Prediction for ${prediction.ticker} Update`,
+        subject: `Stock Movement Update: ${prediction.ticker}`,
         html: `
           <h1>Stock Movement Update</h1>
           <p>Your predicted stock ${prediction.ticker} has gone ${direction}!</p>
           <p>Initial price: $${prediction.initial_price}</p>
           <p>Current price: $${currentPrice.toFixed(2)}</p>
           <p>Change: ${priceChange.toFixed(2)}%</p>
+          <p>Your prediction was that it would go: ${prediction.predicted_direction}</p>
         `
       })
 
@@ -54,17 +58,25 @@ serve(async (req) => {
         .from('stock_predictions')
         .update({ notified: true })
         .eq('id', prediction.id)
+
+      console.log(`Sent notification for prediction ${prediction.id}`)
     }
 
-    return new Response(JSON.stringify({ success: true }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200,
-    })
+    return new Response(
+      JSON.stringify({ success: true, processed: predictions.length }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      }
+    )
   } catch (error) {
     console.error('Error:', error)
-    return new Response(JSON.stringify({ error: error.message }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 500,
-    })
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500,
+      }
+    )
   }
 })
