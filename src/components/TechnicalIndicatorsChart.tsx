@@ -23,7 +23,7 @@ const TechnicalIndicatorsChart: React.FC<TechnicalIndicatorsChartProps> = ({ pre
   const bollingerData = prepareBollingerData(prediction);
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm p-5 h-[500px] w-full max-w-3xl mx-auto mb-8">
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm p-5 h-[500px] w-full max-w-4xl mx-auto mb-8">
       <h2 className="text-lg font-semibold mb-4">Technical Indicators</h2>
       
       <Tabs defaultValue="rsi" className="h-[90%] w-full">

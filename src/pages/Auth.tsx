@@ -26,6 +26,14 @@ const Auth: React.FC = () => {
         navigate('/dashboard');
       }
     });
+    
+    // Check for redirect errors in URL
+    const url = new URL(window.location.href);
+    const errorDescription = url.searchParams.get('error_description');
+    if (errorDescription) {
+      setAuthError(decodeURIComponent(errorDescription));
+      toast.error(decodeURIComponent(errorDescription));
+    }
   }, [navigate]);
 
   const handleEmailAuth = async (e: React.FormEvent, isLogin: boolean) => {
@@ -65,11 +73,15 @@ const Auth: React.FC = () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/dashboard`
+          redirectTo: `${window.location.origin}/dashboard`,
+          queryParams: {
+            prompt: 'select_account' // Forces account selection each time
+          }
         }
       });
+      
       if (error) throw error;
-      toast.success("Redirecting to Google...");
+      toast.info("Redirecting to Google...");
     } catch (error: any) {
       setAuthError(error.message || "Google authentication failed");
       toast.error(error.message || "Google authentication failed");
@@ -159,10 +171,10 @@ const Auth: React.FC = () => {
             </Alert>
           )}
           
-          <Alert className="mb-4">
-            <Info className="h-4 w-4" />
-            <AlertDescription>
-              For Google Sign-in to work, make sure to set the correct redirect URL in Google Cloud Console and Supabase.
+          <Alert className="mb-4 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+            <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            <AlertDescription className="text-blue-700 dark:text-blue-300">
+              Make sure Google authentication is configured properly in both Supabase and Google Cloud Console.
             </AlertDescription>
           </Alert>
           
