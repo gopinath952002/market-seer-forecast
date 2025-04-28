@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { BarChart3, TrendingUp } from 'lucide-react';
+import { BarChart3, TrendingUp, LayoutDashboard } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, useNavigate } from 'react-router-dom';
@@ -50,6 +50,13 @@ const Header: React.FC = () => {
         </div>
         
         <div className="hidden md:flex items-center gap-4 text-sm">
+          <Link 
+            to="/dashboard" 
+            className="flex items-center gap-1 text-gray-700 dark:text-gray-300 hover:text-finance-blue dark:hover:text-finance-teal"
+          >
+            <LayoutDashboard className="h-4 w-4" />
+            <span>Dashboard</span>
+          </Link>
           <Link 
             to="#" 
             className="flex items-center gap-1 text-gray-700 dark:text-gray-300 hover:text-finance-blue dark:hover:text-finance-teal"
