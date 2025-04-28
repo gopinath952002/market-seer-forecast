@@ -26,16 +26,19 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   
   useEffect(() => {
+    // Check if user is already logged in
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setIsAuthenticated(!!session);
     };
     
-    checkAuth();
-    
+    // First set up the listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsAuthenticated(!!session);
     });
+    
+    // Then check current session
+    checkAuth();
     
     return () => {
       subscription.unsubscribe();
@@ -51,19 +54,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 const App = () => {
-  // Remove "Edit with Lovable" badge
-  useEffect(() => {
-    // Use setTimeout to ensure this runs after the DOM is fully loaded
-    const timer = setTimeout(() => {
-      const lovableBadge = document.querySelector('[class*="lovable-badge"]');
-      if (lovableBadge) {
-        (lovableBadge as HTMLElement).style.display = 'none';
-      }
-    }, 1000);
-    
-    return () => clearTimeout(timer);
-  }, []);
-
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>

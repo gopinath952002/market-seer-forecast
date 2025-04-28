@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import StockSearch from '@/components/StockSearch';
 import PredictionChart from '@/components/PredictionChart';

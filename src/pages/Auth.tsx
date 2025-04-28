@@ -2,18 +2,21 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from 'react-router-dom';
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FaGoogle } from 'react-icons/fa';
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertTriangle, Info } from "lucide-react";
 
 const Auth: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [resetPasswordMode, setResetPasswordMode] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,6 +31,7 @@ const Auth: React.FC = () => {
   const handleEmailAuth = async (e: React.FormEvent, isLogin: boolean) => {
     e.preventDefault();
     setIsLoading(true);
+    setAuthError(null);
     
     try {
       if (isLogin) {
@@ -38,11 +42,18 @@ const Auth: React.FC = () => {
         navigate('/dashboard');
       } else {
         // Signup
-        const { error } = await supabase.auth.signUp({ email, password });
+        const { error } = await supabase.auth.signUp({ 
+          email, 
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth`
+          }
+        });
         if (error) throw error;
         toast.success("Account created successfully! Please check your email to verify.");
       }
     } catch (error: any) {
+      setAuthError(error.message || "Authentication failed");
       toast.error(error.message || "Authentication failed");
     } finally {
       setIsLoading(false);
@@ -58,7 +69,9 @@ const Auth: React.FC = () => {
         }
       });
       if (error) throw error;
+      toast.success("Redirecting to Google...");
     } catch (error: any) {
+      setAuthError(error.message || "Google authentication failed");
       toast.error(error.message || "Google authentication failed");
     }
   };
@@ -66,6 +79,7 @@ const Auth: React.FC = () => {
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setAuthError(null);
     
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -76,6 +90,7 @@ const Auth: React.FC = () => {
       toast.success("Password reset email sent. Please check your inbox.");
       setResetPasswordMode(false);
     } catch (error: any) {
+      setAuthError(error.message || "Failed to send reset email");
       toast.error(error.message || "Failed to send reset email");
     } finally {
       setIsLoading(false);
@@ -88,8 +103,15 @@ const Auth: React.FC = () => {
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle>Reset Password</CardTitle>
+            <CardDescription>Enter your email to receive a password reset link</CardDescription>
           </CardHeader>
           <CardContent>
+            {authError && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>{authError}</AlertDescription>
+              </Alert>
+            )}
             <form onSubmit={handleResetPassword} className="space-y-4">
               <Input 
                 type="email" 
@@ -127,8 +149,23 @@ const Auth: React.FC = () => {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-center text-2xl font-bold">Market Seer</CardTitle>
+          <CardDescription className="text-center">Sign in to track your stock predictions</CardDescription>
         </CardHeader>
         <CardContent>
+          {authError && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>{authError}</AlertDescription>
+            </Alert>
+          )}
+          
+          <Alert className="mb-4">
+            <Info className="h-4 w-4" />
+            <AlertDescription>
+              For Google Sign-in to work, make sure to set the correct redirect URL in Google Cloud Console and Supabase.
+            </AlertDescription>
+          </Alert>
+          
           <Tabs defaultValue="login" className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-4">
               <TabsTrigger value="login">Login</TabsTrigger>

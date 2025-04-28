@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { StockPrediction } from '@/utils/mockData';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Gauge, BarChart2, PieChart, Lightbulb, Percent, Info, BookOpen, Bell } from 'lucide-react';
+import { Gauge, BarChart2, PieChart, Lightbulb, Percent, Info, BookOpen, Bell, EyeIcon, EyeOffIcon } from 'lucide-react';
 import { 
   calculateRiskLevel, 
   getRSIEducationalContext, 
@@ -19,7 +19,6 @@ import {
 } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { Button } from '@/components/ui/button';
-import AlertSettings from './AlertSettings';
 import DisclaimerAlert from './DisclaimerAlert';
 
 interface PredictionMetricsProps {
@@ -29,7 +28,6 @@ interface PredictionMetricsProps {
 const PredictionMetrics: React.FC<PredictionMetricsProps> = ({ prediction }) => {
   const { metrics, indicators } = prediction;
   const [showEducation, setShowEducation] = useState(false);
-  const [alertDialogOpen, setAlertDialogOpen] = useState(false);
   
   // Determine if prediction is relatively bullish or bearish
   const isBullish = indicators.recommendation === "Buy" || indicators.recommendation === "Strong Buy";
@@ -52,7 +50,7 @@ const PredictionMetrics: React.FC<PredictionMetricsProps> = ({ prediction }) => 
   const rsiContext = getRSIEducationalContext(indicators.rsi);
   const macdContext = getMACDEducationalContext(indicators.macd);
   const bollingerContext = getBollingerEducationalContext(
-    prediction.metadata.currentPrice, // Using metadata.currentPrice instead of metrics.currentPrice
+    prediction.metadata.currentPrice,
     indicators.bollingerUpper,
     indicators.bollingerLower
   );
@@ -63,21 +61,14 @@ const PredictionMetrics: React.FC<PredictionMetricsProps> = ({ prediction }) => 
       <div className="flex items-center justify-between mb-2">
         <h2 className="text-lg font-semibold">Prediction Metrics & Indicators</h2>
         <div className="flex items-center gap-2">
-          <button 
-            onClick={() => setShowEducation(!showEducation)}
-            className="flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-          >
-            <BookOpen className="h-4 w-4" />
-            {showEducation ? 'Hide' : 'Show'} Educational Context
-          </button>
           <Button 
-            variant="outline" 
+            variant="ghost" 
             size="sm" 
+            onClick={() => setShowEducation(!showEducation)}
             className="flex items-center gap-1.5"
-            onClick={() => setAlertDialogOpen(true)}
           >
-            <Bell className="h-4 w-4" />
-            Set Custom Alerts
+            {showEducation ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
+            {showEducation ? 'Hide' : 'Show'} Educational Context
           </Button>
         </div>
       </div>
@@ -280,14 +271,6 @@ const PredictionMetrics: React.FC<PredictionMetricsProps> = ({ prediction }) => 
 
       {/* Disclaimer section */}
       <DisclaimerAlert className="mt-6" />
-      
-      {/* Alert Settings Dialog */}
-      <AlertSettings 
-        open={alertDialogOpen} 
-        onOpenChange={setAlertDialogOpen} 
-        stockTicker={prediction.ticker}
-        currentPrice={prediction.metadata.currentPrice}
-      />
     </div>
   );
 };
