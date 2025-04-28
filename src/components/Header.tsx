@@ -11,15 +11,17 @@ const Header: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
-
+    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
       }
     );
+
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
 
     return () => {
       subscription.unsubscribe();
@@ -27,19 +29,23 @@ const Header: React.FC = () => {
   }, []);
 
   const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast.error("Logout failed");
-    } else {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        throw error;
+      }
       toast.success("Logged out successfully");
+      setSession(null);
       navigate('/auth');
+    } catch (error: any) {
+      toast.error("Logout failed: " + error.message);
     }
   };
 
   return (
     <header className="w-full bg-white dark:bg-gray-900 shadow-sm py-4">
       <div className="container flex justify-between items-center">
-        <div className="flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-2">
           <div className="bg-finance-blue dark:bg-finance-teal rounded-md p-2">
             <TrendingUp className="h-6 w-6 text-white" />
           </div>
@@ -47,38 +53,47 @@ const Header: React.FC = () => {
             <h1 className="text-xl font-bold text-finance-blue dark:text-finance-teal">Market Seer</h1>
             <p className="text-xs text-gray-600 dark:text-gray-400">Stock Price Prediction with AI</p>
           </div>
-        </div>
+        </Link>
         
         <div className="hidden md:flex items-center gap-4 text-sm">
-          <Link 
-            to="/dashboard" 
-            className="flex items-center gap-1 text-gray-700 dark:text-gray-300 hover:text-finance-blue dark:hover:text-finance-teal"
-          >
-            <LayoutDashboard className="h-4 w-4" />
-            <span>Dashboard</span>
-          </Link>
-          <Link 
-            to="#" 
-            className="flex items-center gap-1 text-gray-700 dark:text-gray-300 hover:text-finance-blue dark:hover:text-finance-teal"
-          >
-            <BarChart3 className="h-4 w-4" />
-            <span>Analytics</span>
-          </Link>
-          <Link 
-            to="#" 
-            className="text-gray-700 dark:text-gray-300 hover:text-finance-blue dark:hover:text-finance-teal"
-          >
-            Documentation
-          </Link>
-          
           {session ? (
-            <Button variant="destructive" size="sm" onClick={handleLogout}>
-              Logout
-            </Button>
+            <>
+              <Link 
+                to="/dashboard" 
+                className="flex items-center gap-1 text-gray-700 dark:text-gray-300 hover:text-finance-blue dark:hover:text-finance-teal"
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                <span>Dashboard</span>
+              </Link>
+              <Link 
+                to="#" 
+                className="flex items-center gap-1 text-gray-700 dark:text-gray-300 hover:text-finance-blue dark:hover:text-finance-teal"
+              >
+                <BarChart3 className="h-4 w-4" />
+                <span>Analytics</span>
+              </Link>
+              <Link 
+                to="#" 
+                className="text-gray-700 dark:text-gray-300 hover:text-finance-blue dark:hover:text-finance-teal"
+              >
+                Documentation
+              </Link>
+              <Button variant="destructive" size="sm" onClick={handleLogout}>
+                Logout
+              </Button>
+            </>
           ) : (
-            <Button variant="default" size="sm" onClick={() => navigate('/auth')}>
-              Login
-            </Button>
+            <>
+              <Link 
+                to="#" 
+                className="text-gray-700 dark:text-gray-300 hover:text-finance-blue dark:hover:text-finance-teal"
+              >
+                Documentation
+              </Link>
+              <Button variant="default" size="sm" onClick={() => navigate('/auth')}>
+                Login
+              </Button>
+            </>
           )}
         </div>
       </div>
