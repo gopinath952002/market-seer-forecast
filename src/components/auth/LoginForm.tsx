@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { FaGoogle } from 'react-icons/fa';
 
 interface LoginFormProps {
   setError: (error: string | null) => void;
@@ -33,26 +32,6 @@ const LoginForm = ({ setError, onResetPassword }: LoginFormProps) => {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/dashboard`,
-          queryParams: {
-            prompt: 'select_account'
-          }
-        }
-      });
-      
-      if (error) throw error;
-      toast.info("Redirecting to Google...");
-    } catch (error: any) {
-      setError(error.message || "Google authentication failed");
-      toast.error(error.message || "Google authentication failed");
-    }
-  };
-
   return (
     <form onSubmit={handleLogin} className="space-y-4">
       <Input 
@@ -75,25 +54,6 @@ const LoginForm = ({ setError, onResetPassword }: LoginFormProps) => {
         disabled={isLoading}
       >
         {isLoading ? "Logging in..." : "Login"}
-      </Button>
-      
-      <div className="relative my-4">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-gray-300"></span>
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-white dark:bg-gray-800 px-2 text-gray-500">Or</span>
-        </div>
-      </div>
-      
-      <Button 
-        type="button" 
-        variant="outline" 
-        className="w-full flex items-center justify-center gap-2"
-        onClick={handleGoogleLogin}
-      >
-        <FaGoogle />
-        <span>Continue with Google</span>
       </Button>
       
       <div className="text-center mt-4">

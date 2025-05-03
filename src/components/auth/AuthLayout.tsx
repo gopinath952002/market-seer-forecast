@@ -2,7 +2,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Info } from "lucide-react";
 
 interface AuthLayoutProps {
   title?: string;
@@ -25,13 +24,6 @@ const AuthLayout = ({ title = "Market Seer", description = "Sign in to track you
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          
-          <Alert className="mb-4 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-            <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-            <AlertDescription className="text-blue-700 dark:text-blue-300">
-              Make sure Google authentication is configured properly in both Supabase and Google Cloud Console.
-            </AlertDescription>
-          </Alert>
           
           {children}
         </CardContent>
