@@ -6,14 +6,14 @@ import { useTheme } from '@/hooks/use-theme';
 import { Sun, Moon, LogIn, LogOut, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Header = () => {
   const { setTheme, theme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   const [session, setSession] = React.useState<any>(null);
 
   React.useEffect(() => {
