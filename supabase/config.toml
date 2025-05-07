@@ -3,3 +3,6 @@ project_id = "lkqdkjvdpkcxifzutocu"
 
 [functions.check-predictions]
 verify_jwt = false
+
+[functions.python-bridge]
+verify_jwt = true
