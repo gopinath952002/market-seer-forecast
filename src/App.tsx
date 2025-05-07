@@ -10,7 +10,6 @@ import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Forecasts from "./pages/Forecasts";
-import PythonDemo from "./pages/PythonDemo";
 import React, { useEffect, useState } from 'react';
 import { supabase } from "./integrations/supabase/client";
 
@@ -70,7 +69,6 @@ const App = () => {
             <Route path="/forecasts" element={<Forecasts />} />
             <Route path="/disclaimer" element={<Disclaimer />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/python-demo" element={<PythonDemo />} />
             <Route 
               path="/dashboard" 
               element={

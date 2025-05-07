@@ -72,12 +72,6 @@ const Header = () => {
               Forecasts
             </Link>
             <Link 
-              to="/python-demo" 
-              className={`text-sm font-medium ${location.pathname === '/python-demo' ? 'text-finance-blue dark:text-finance-teal' : 'text-gray-600 dark:text-gray-300'} hover:text-finance-blue dark:hover:text-finance-teal transition-colors`}
-            >
-              Python Demo
-            </Link>
-            <Link 
               to="/disclaimer" 
               className={`text-sm font-medium ${location.pathname === '/disclaimer' ? 'text-finance-blue dark:text-finance-teal' : 'text-gray-600 dark:text-gray-300'} hover:text-finance-blue dark:hover:text-finance-teal transition-colors`}
             >
