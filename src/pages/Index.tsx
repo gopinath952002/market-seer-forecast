@@ -92,10 +92,10 @@ const Index = () => {
       
       <main className="flex-1 container py-8 px-4 sm:px-6">
         {showDisclaimer && (
-          <div className="glass-card bg-amber-50/80 dark:bg-amber-900/30 border-l-4 border-amber-500 p-4 mb-8 rounded-md card-3d">
+          <div className="bg-amber-50/80 dark:bg-amber-900/30 border-l-4 border-amber-500 p-4 mb-8 rounded-md">
             <div className="flex items-start">
               <div className="flex-shrink-0 pt-0.5">
-                <AlertTriangle className="h-5 w-5 text-amber-500 float-animation" />
+                <AlertTriangle className="h-5 w-5 text-amber-500" />
               </div>
               <div className="ml-3 flex-1">
                 <h3 className="text-sm font-medium text-amber-800 dark:text-amber-400">Demonstration Only</h3>
@@ -104,7 +104,7 @@ const Index = () => {
                 </div>
               </div>
               <button 
-                className="ml-auto text-amber-600 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-200 btn-3d"
+                className="ml-auto text-amber-600 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-200"
                 onClick={() => setShowDisclaimer(false)}
               >
                 <span className="sr-only">Dismiss</span>
@@ -126,13 +126,13 @@ const Index = () => {
           />
         </div>
         
-        <div className="mb-8 card-3d">
+        <div className="mb-8">
           <StockSearch onSearch={handleSearch} isRealApi={useRealApi} />
         </div>
         
         {isLoading && (
-          <div className="flex flex-col items-center justify-center py-16 glass-card rounded-xl card-3d">
-            <div className="relative w-20 h-20 loading-3d">
+          <div className="flex flex-col items-center justify-center py-16 bg-white/80 dark:bg-gray-800/80 rounded-xl border border-gray-200 dark:border-gray-700">
+            <div className="relative w-20 h-20">
               <div className="absolute inset-0 rounded-full border-4 border-t-finance-blue dark:border-t-finance-teal border-gray-200/50 dark:border-gray-700/50 animate-spin"></div>
             </div>
             <p className="mt-6 text-gray-600 dark:text-gray-300 font-medium">
@@ -143,19 +143,19 @@ const Index = () => {
         
         {!isLoading && prediction && (
           <div className="space-y-8">
-            <div className="chart-3d">
+            <div>
               <PredictionChart prediction={prediction} />
             </div>
-            <div className="chart-3d">
+            <div>
               <TechnicalIndicatorsChart prediction={prediction} />
             </div>
-            <div className="card-3d">
+            <div>
               <PredictionMetrics prediction={prediction} />
             </div>
             
-            <div className="glass-card rounded-lg p-6 border border-blue-200/50 dark:border-blue-500/20 card-3d">
+            <div className="bg-white/80 dark:bg-gray-800/80 rounded-lg p-6 border border-blue-200/50 dark:border-blue-500/20">
               <div className="flex items-center justify-center gap-2 mb-4">
-                <BookOpen className="h-5 w-5 text-finance-blue dark:text-finance-teal float-animation" />
+                <BookOpen className="h-5 w-5 text-finance-blue dark:text-finance-teal" />
                 <h3 className="text-lg font-medium text-finance-blue dark:text-finance-teal">
                   Learn More About Technical Analysis
                 </h3>
@@ -165,7 +165,7 @@ const Index = () => {
                   href="https://www.investopedia.com/terms/r/rsi.asp" 
                   target="_blank"
                   rel="noopener noreferrer" 
-                  className="p-4 bg-white/80 dark:bg-gray-800/80 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-500 transition-colors card-3d link-3d"
+                  className="p-4 bg-white/80 dark:bg-gray-800/80 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-500 transition-colors"
                 >
                   <h4 className="font-medium mb-2">Understanding RSI</h4>
                   <p className="text-sm text-gray-600 dark:text-gray-300">
@@ -176,7 +176,7 @@ const Index = () => {
                   href="https://www.investopedia.com/terms/m/macd.asp" 
                   target="_blank"
                   rel="noopener noreferrer" 
-                  className="p-4 bg-white/80 dark:bg-gray-800/80 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-500 transition-colors card-3d link-3d"
+                  className="p-4 bg-white/80 dark:bg-gray-800/80 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-500 transition-colors"
                 >
                   <h4 className="font-medium mb-2">MACD Explained</h4>
                   <p className="text-sm text-gray-600 dark:text-gray-300">
@@ -187,7 +187,7 @@ const Index = () => {
                   href="https://www.investopedia.com/terms/b/bollingerbands.asp" 
                   target="_blank"
                   rel="noopener noreferrer" 
-                  className="p-4 bg-white/80 dark:bg-gray-800/80 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-500 transition-colors card-3d link-3d"
+                  className="p-4 bg-white/80 dark:bg-gray-800/80 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-500 transition-colors"
                 >
                   <h4 className="font-medium mb-2">Bollinger Bands Guide</h4>
                   <p className="text-sm text-gray-600 dark:text-gray-300">
@@ -198,9 +198,9 @@ const Index = () => {
             </div>
             
             {!useRealApi && (
-              <div className="glass-card rounded-lg p-6 text-center border border-blue-200/50 dark:border-blue-500/20 card-3d">
+              <div className="bg-white/80 dark:bg-gray-800/80 rounded-lg p-6 text-center border border-blue-200/50 dark:border-blue-500/20">
                 <div className="flex items-center justify-center gap-2 mb-2">
-                  <Database className="h-5 w-5 text-finance-blue dark:text-finance-teal animated-pulse" />
+                  <Database className="h-5 w-5 text-finance-blue dark:text-finance-teal" />
                   <h3 className="text-lg font-medium text-finance-blue dark:text-finance-teal">
                     Try the Live API
                   </h3>
@@ -214,7 +214,7 @@ const Index = () => {
         )}
         
         {!isLoading && !prediction && error && (
-          <div className="bg-red-50/80 dark:bg-red-900/20 p-6 rounded-lg border border-red-200 dark:border-red-800 glass-card card-3d">
+          <div className="bg-red-50/80 dark:bg-red-900/20 p-6 rounded-lg border border-red-200 dark:border-red-800">
             <h3 className="text-lg font-medium text-red-800 dark:text-red-400 mb-2">API Error</h3>
             <p className="text-red-700 dark:text-red-300">
               There was a problem fetching stock data. Please try again later or try a different ticker symbol.
