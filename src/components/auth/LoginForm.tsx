@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useNavigate } from 'react-router-dom';
 
 interface LoginFormProps {
   setError: (error: string | null) => void;
@@ -14,6 +15,7 @@ const LoginForm = ({ setError, onResetPassword }: LoginFormProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,10 +23,20 @@ const LoginForm = ({ setError, onResetPassword }: LoginFormProps) => {
     setError(null);
     
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({ 
+        email, 
+        password 
+      });
+      
       if (error) throw error;
-      toast.success("Logged in successfully!");
+      
+      if (data.session) {
+        toast.success("Logged in successfully!");
+        // Force navigation to main page
+        window.location.href = '/';
+      }
     } catch (error: any) {
+      console.error('Login error:', error);
       setError(error.message || "Authentication failed");
       toast.error(error.message || "Authentication failed");
     } finally {

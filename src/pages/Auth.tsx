@@ -15,9 +15,35 @@ const Auth: React.FC = () => {
 
   useEffect(() => {
     // Check if user is already logged in
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        navigate('/dashboard');
+    const checkAuthState = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Session check error:', error);
+          return;
+        }
+        
+        if (session) {
+          console.log('User already authenticated, redirecting to home');
+          window.location.href = '/';
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error);
+      }
+    };
+
+    checkAuthState();
+    
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state changed:', event, session?.user?.email);
+      
+      if (event === 'SIGNED_IN' && session) {
+        // Use window.location.href for a complete page refresh
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 100);
       }
     });
     
@@ -27,6 +53,10 @@ const Auth: React.FC = () => {
     if (errorDescription) {
       setAuthError(decodeURIComponent(errorDescription));
     }
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [navigate]);
 
   if (resetPasswordMode) {

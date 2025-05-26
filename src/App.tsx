@@ -27,17 +27,40 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   
   useEffect(() => {
-    // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsAuthenticated(!!session);
-    });
+    let mounted = true;
     
-    // THEN check current session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setIsAuthenticated(!!session);
+    const checkAuth = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Session check error:', error);
+          if (mounted) setIsAuthenticated(false);
+          return;
+        }
+        
+        if (mounted) {
+          setIsAuthenticated(!!session);
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        if (mounted) setIsAuthenticated(false);
+      }
+    };
+
+    // Check current session first
+    checkAuth();
+    
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state change in ProtectedRoute:', event, !!session);
+      if (mounted) {
+        setIsAuthenticated(!!session);
+      }
     });
     
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
@@ -54,7 +77,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
   
-  return isAuthenticated ? <>{children}</> : <Navigate to="/auth" />;
+  return isAuthenticated ? <>{children}</> : <Navigate to="/auth" replace />;
 };
 
 const App = () => {
