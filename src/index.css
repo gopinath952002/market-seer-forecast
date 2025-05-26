@@ -94,3 +94,81 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  /* 3D Effects */
+  .effect-3d-subtle {
+    transform-style: preserve-3d;
+    transition: all 0.2s ease-out;
+  }
+  
+  .effect-3d-subtle:hover {
+    transform: translateY(-1px) scale(1.01);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .effect-3d-card {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(240, 240, 240, 0.9));
+    box-shadow: 
+      0 2px 4px rgba(0, 0, 0, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    transition: all 0.3s ease-out;
+    transform-style: preserve-3d;
+  }
+  
+  .effect-3d-card:hover {
+    transform: translateY(-2px) rotateX(2deg);
+    box-shadow: 
+      0 8px 16px rgba(0, 0, 0, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  }
+  
+  .dark .effect-3d-card {
+    background: linear-gradient(145deg, rgba(32, 32, 32, 0.9), rgba(16, 16, 16, 0.9));
+    box-shadow: 
+      0 2px 4px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+  
+  .dark .effect-3d-card:hover {
+    box-shadow: 
+      0 8px 16px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  }
+  
+  .effect-3d-button {
+    background: linear-gradient(145deg, #ffffff, #e6e6e6);
+    box-shadow: 
+      0 2px 4px rgba(0, 0, 0, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    transition: all 0.15s ease-out;
+    transform-style: preserve-3d;
+  }
+  
+  .effect-3d-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 
+      0 4px 8px rgba(0, 0, 0, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  }
+  
+  .effect-3d-button:active {
+    transform: translateY(0px);
+    box-shadow: 
+      0 1px 2px rgba(0, 0, 0, 0.1),
+      inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .dark .effect-3d-button {
+    background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+    box-shadow: 
+      0 2px 4px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+  
+  .dark .effect-3d-button:hover {
+    box-shadow: 
+      0 4px 8px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  }
+}
