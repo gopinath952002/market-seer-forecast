@@ -23,18 +23,18 @@ const TechnicalIndicatorsChart: React.FC<TechnicalIndicatorsChartProps> = ({ pre
   const bollingerData = prepareBollingerData(prediction);
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm p-5 h-[500px] w-full max-w-4xl mx-auto mb-8">
-      <h2 className="text-lg font-semibold mb-4">Technical Indicators</h2>
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm p-6 h-[600px] w-full max-w-5xl mx-auto mb-8">
+      <h2 className="text-xl font-semibold mb-6 text-gray-900 dark:text-gray-100">Technical Indicators</h2>
       
-      <Tabs defaultValue="rsi" className="h-[90%] w-full">
-        <TabsList className="grid grid-cols-3 mb-4 w-full">
-          <TabsTrigger value="rsi">RSI</TabsTrigger>
-          <TabsTrigger value="macd">MACD</TabsTrigger>
-          <TabsTrigger value="bollinger">Bollinger Bands</TabsTrigger>
+      <Tabs defaultValue="rsi" className="h-[calc(100%-3rem)] w-full flex flex-col">
+        <TabsList className="grid grid-cols-3 mb-6 w-full max-w-md mx-auto">
+          <TabsTrigger value="rsi" className="text-sm">RSI</TabsTrigger>
+          <TabsTrigger value="macd" className="text-sm">MACD</TabsTrigger>
+          <TabsTrigger value="bollinger" className="text-sm">Bollinger Bands</TabsTrigger>
         </TabsList>
         
-        <div className="w-full h-full overflow-hidden">
-          <TabsContent value="rsi" className="h-full w-full">
+        <div className="flex-1 w-full min-h-0">
+          <TabsContent value="rsi" className="h-full w-full m-0">
             <IndicatorChartContainer 
               title="RSI" 
               description="Relative Strength Index (RSI) helps identify overbought or oversold conditions"
@@ -43,7 +43,7 @@ const TechnicalIndicatorsChart: React.FC<TechnicalIndicatorsChartProps> = ({ pre
             </IndicatorChartContainer>
           </TabsContent>
           
-          <TabsContent value="macd" className="h-full w-full">
+          <TabsContent value="macd" className="h-full w-full m-0">
             <IndicatorChartContainer 
               title="MACD" 
               description="Moving Average Convergence Divergence (MACD) shows momentum changes"
@@ -52,7 +52,7 @@ const TechnicalIndicatorsChart: React.FC<TechnicalIndicatorsChartProps> = ({ pre
             </IndicatorChartContainer>
           </TabsContent>
           
-          <TabsContent value="bollinger" className="h-full w-full">
+          <TabsContent value="bollinger" className="h-full w-full m-0">
             <IndicatorChartContainer 
               title="Bollinger Bands" 
               description="Bollinger Bands show volatility and potential price reversals using standard deviations"

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { format, parseISO } from 'date-fns';
-import { ComposedChart, Line, XAxis, YAxis, CartesianGrid, Bar, Legend } from 'recharts';
+import { ComposedChart, Line, XAxis, YAxis, CartesianGrid, Bar, Legend, ResponsiveContainer } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 
 interface MACDChartProps {
@@ -43,42 +43,52 @@ const MACDChart: React.FC<MACDChartProps> = ({ macdData }) => {
   };
 
   return (
-    <ChartContainer config={macdConfig} className="h-[85%]">
-      <ComposedChart data={macdData} margin={{ top: 5, right: 20, bottom: 25, left: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#ccc" opacity={0.2} />
-        <XAxis 
-          dataKey="date" 
-          tickFormatter={formatXAxis}
-          tick={{ fontSize: 12 }}
-        />
-        <YAxis
-          tick={{ fontSize: 12 }}
-        />
-        <ChartTooltip content={<ChartTooltipContent />} />
-        <Legend />
-        <Bar 
-          dataKey="histogram" 
-          fill="var(--color-histogram)" 
-          name="histogram"
-        />
-        <Line 
-          type="monotone" 
-          dataKey="macd" 
-          stroke="var(--color-macd)" 
-          strokeWidth={2}
-          dot={false}
-          name="macd"
-        />
-        <Line 
-          type="monotone" 
-          dataKey="signal" 
-          stroke="var(--color-signal)" 
-          strokeWidth={2}
-          dot={false}
-          name="signal"
-        />
-      </ComposedChart>
-    </ChartContainer>
+    <div className="w-full h-full">
+      <ChartContainer config={macdConfig} className="w-full h-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <ComposedChart 
+            data={macdData} 
+            margin={{ top: 20, right: 30, bottom: 20, left: 20 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" stroke="#e0e7ff" opacity={0.3} />
+            <XAxis 
+              dataKey="date" 
+              tickFormatter={formatXAxis}
+              tick={{ fontSize: 12 }}
+              height={60}
+            />
+            <YAxis
+              tick={{ fontSize: 12 }}
+              width={60}
+            />
+            <ChartTooltip content={<ChartTooltipContent />} />
+            <Legend />
+            <Bar 
+              dataKey="histogram" 
+              fill="var(--color-histogram)" 
+              name="Histogram"
+              opacity={0.7}
+            />
+            <Line 
+              type="monotone" 
+              dataKey="macd" 
+              stroke="var(--color-macd)" 
+              strokeWidth={2}
+              dot={false}
+              name="MACD"
+            />
+            <Line 
+              type="monotone" 
+              dataKey="signal" 
+              stroke="var(--color-signal)" 
+              strokeWidth={2}
+              dot={false}
+              name="Signal"
+            />
+          </ComposedChart>
+        </ResponsiveContainer>
+      </ChartContainer>
+    </div>
   );
 };
 

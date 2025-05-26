@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { format, parseISO } from 'date-fns';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Legend, Tooltip, ReferenceArea } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Legend, ReferenceArea, ResponsiveContainer } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Info } from 'lucide-react';
 
@@ -95,93 +95,98 @@ const BollingerBandsChart: React.FC<BollingerBandsChartProps> = ({ bollingerData
   };
 
   return (
-    <div className="relative h-[85%]">
+    <div className="relative w-full h-full">
       {activeZoom && (
         <button 
           onClick={resetZoom}
-          className="absolute top-0 right-0 z-10 text-sm text-blue-600 hover:text-blue-800 bg-white/80 dark:bg-gray-800/80 dark:text-blue-400 rounded px-2 py-1 flex items-center"
+          className="absolute top-2 right-2 z-10 text-sm text-blue-600 hover:text-blue-800 bg-white/80 dark:bg-gray-800/80 dark:text-blue-400 rounded px-2 py-1 flex items-center shadow-sm"
         >
           <Info className="w-3 h-3 mr-1" />
           Reset Zoom
         </button>
       )}
       
-      <ChartContainer config={bollingerConfig} className="h-full">
-        <LineChart 
-          data={bollingerData} 
-          margin={{ top: 5, right: 20, bottom: 25, left: 0 }}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-        >
-          <CartesianGrid strokeDasharray="3 3" stroke="#ccc" opacity={0.2} />
-          <XAxis 
-            dataKey="date" 
-            tickFormatter={formatXAxis}
-            tick={{ fontSize: 12 }}
-            domain={getXDomain()}
-          />
-          <YAxis
-            tick={{ fontSize: 12 }}
-            domain={['dataMin - 10', 'dataMax + 10']}
-            label={{ value: 'Price', angle: -90, position: 'insideLeft', offset: -5, fontSize: 12 }}
-          />
-          <ChartTooltip 
-            content={
-              <ChartTooltipContent 
-                formatter={(value: any, name: any) => {
-                  return [`$${Number(value).toFixed(2)}`, name];
-                }}
-                labelFormatter={(label) => {
-                  return `${format(parseISO(String(label)), 'MMM dd, yyyy')}`;
-                }}
-              />
-            } 
-          />
-          <Legend />
-          <Line 
-            type="monotone" 
-            dataKey="upperBand" 
-            stroke="var(--color-upperBand)" 
-            strokeWidth={2}
-            dot={false}
-            name="upperBand"
-          />
-          <Line 
-            type="monotone" 
-            dataKey="lowerBand" 
-            stroke="var(--color-lowerBand)" 
-            strokeWidth={2}
-            dot={false}
-            name="lowerBand"
-          />
-          <Line 
-            type="monotone" 
-            dataKey="middleBand" 
-            stroke="var(--color-middleBand)" 
-            strokeWidth={2}
-            strokeDasharray="5 5"
-            dot={false}
-            name="middleBand"
-          />
-          <Line 
-            type="monotone" 
-            dataKey="price" 
-            stroke="var(--color-price)" 
-            strokeWidth={2}
-            name="price"
-          />
-          
-          {startIndex !== null && (
-            <ReferenceArea 
-              x1={bollingerData[startIndex].date}
-              x2={bollingerData[startIndex].date} 
-              strokeOpacity={0.3}
-              fill="#8884d8"
-              fillOpacity={0.1}
+      <ChartContainer config={bollingerConfig} className="w-full h-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart 
+            data={bollingerData} 
+            margin={{ top: 20, right: 30, bottom: 20, left: 20 }}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+          >
+            <CartesianGrid strokeDasharray="3 3" stroke="#e0e7ff" opacity={0.3} />
+            <XAxis 
+              dataKey="date" 
+              tickFormatter={formatXAxis}
+              tick={{ fontSize: 12 }}
+              domain={getXDomain()}
+              height={60}
             />
-          )}
-        </LineChart>
+            <YAxis
+              tick={{ fontSize: 12 }}
+              domain={['dataMin - 10', 'dataMax + 10']}
+              label={{ value: 'Price ($)', angle: -90, position: 'insideLeft', offset: -5, fontSize: 12 }}
+              width={60}
+            />
+            <ChartTooltip 
+              content={
+                <ChartTooltipContent 
+                  formatter={(value: any, name: any) => {
+                    return [`$${Number(value).toFixed(2)}`, name];
+                  }}
+                  labelFormatter={(label) => {
+                    return `${format(parseISO(String(label)), 'MMM dd, yyyy')}`;
+                  }}
+                />
+              } 
+            />
+            <Legend />
+            <Line 
+              type="monotone" 
+              dataKey="upperBand" 
+              stroke="var(--color-upperBand)" 
+              strokeWidth={2}
+              dot={false}
+              name="Upper Band"
+            />
+            <Line 
+              type="monotone" 
+              dataKey="lowerBand" 
+              stroke="var(--color-lowerBand)" 
+              strokeWidth={2}
+              dot={false}
+              name="Lower Band"
+            />
+            <Line 
+              type="monotone" 
+              dataKey="middleBand" 
+              stroke="var(--color-middleBand)" 
+              strokeWidth={2}
+              strokeDasharray="5 5"
+              dot={false}
+              name="Middle Band"
+            />
+            <Line 
+              type="monotone" 
+              dataKey="price" 
+              stroke="var(--color-price)" 
+              strokeWidth={3}
+              name="Price"
+              dot={{ fill: "var(--color-price)", strokeWidth: 2, r: 2 }}
+            />
+            
+            {startIndex !== null && (
+              <ReferenceArea 
+                x1={bollingerData[startIndex].date}
+                x2={bollingerData[startIndex].date} 
+                strokeOpacity={0.3}
+                fill="#8884d8"
+                fillOpacity={0.1}
+              />
+            )}
+          </LineChart>
+        </ResponsiveContainer>
       </ChartContainer>
     </div>
   );
