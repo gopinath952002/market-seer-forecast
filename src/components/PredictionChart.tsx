@@ -12,7 +12,7 @@ import {
   ChartTooltipContent
 } from '@/components/ui/chart';
 import { addConfidenceIntervals } from './technical-indicators/indicatorUtils';
-import { convertUsdToInr, formatINR, formatINRShort, getExchangeRateInfo } from '@/utils/currencyUtils';
+import { convertUsdToInr, formatINR, formatINRShort, getExchangeRateInfo, isIndianStock } from '@/utils/currencyUtils';
 
 interface PredictionChartProps {
   prediction: StockPrediction;
@@ -22,10 +22,13 @@ const PredictionChart: React.FC<PredictionChartProps> = ({ prediction }) => {
   // Add confidence intervals to prediction data
   const enhancedPredictionData = addConfidenceIntervals(prediction);
   
+  // Check if this is an Indian stock - if so, don't convert prices
+  const shouldConvertToINR = !isIndianStock(prediction.ticker);
+  
   const combinedData = [
     ...prediction.historicalData.map(item => ({
       date: item.date,
-      actual: convertUsdToInr(item.price),
+      actual: shouldConvertToINR ? convertUsdToInr(item.price) : item.price,
       predicted: null,
       lowerBound: null,
       upperBound: null,
@@ -33,11 +36,11 @@ const PredictionChart: React.FC<PredictionChartProps> = ({ prediction }) => {
     })),
     ...enhancedPredictionData.map(item => ({
       date: item.date,
-      actual: item.actual ? convertUsdToInr(item.actual) : null,
-      predicted: convertUsdToInr(item.predicted),
-      lowerBound: item.lowerBound ? convertUsdToInr(parseFloat(item.lowerBound)) : null,
-      upperBound: item.upperBound ? convertUsdToInr(parseFloat(item.upperBound)) : null,
-      confidenceInterval: item.confidenceInterval ? convertUsdToInr(parseFloat(item.confidenceInterval)) : null,
+      actual: item.actual ? (shouldConvertToINR ? convertUsdToInr(item.actual) : item.actual) : null,
+      predicted: shouldConvertToINR ? convertUsdToInr(item.predicted) : item.predicted,
+      lowerBound: item.lowerBound ? (shouldConvertToINR ? convertUsdToInr(parseFloat(item.lowerBound)) : parseFloat(item.lowerBound)) : null,
+      upperBound: item.upperBound ? (shouldConvertToINR ? convertUsdToInr(parseFloat(item.upperBound)) : parseFloat(item.upperBound)) : null,
+      confidenceInterval: item.confidenceInterval ? (shouldConvertToINR ? convertUsdToInr(parseFloat(item.confidenceInterval)) : parseFloat(item.confidenceInterval)) : null,
       isPrediction: true
     }))
   ].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -77,6 +80,10 @@ const PredictionChart: React.FC<PredictionChartProps> = ({ prediction }) => {
     }
   };
 
+  // Format current price and change
+  const currentPrice = shouldConvertToINR ? convertUsdToInr(prediction.metadata.currentPrice) : prediction.metadata.currentPrice;
+  const priceChange = shouldConvertToINR ? convertUsdToInr(prediction.metadata.change) : prediction.metadata.change;
+
   return (
     <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm p-5 w-full max-w-3xl mx-auto mb-8">
       <div className="flex justify-between items-center mb-6">
@@ -90,11 +97,11 @@ const PredictionChart: React.FC<PredictionChartProps> = ({ prediction }) => {
         </div>
         <div className="text-right">
           <p className="text-2xl font-bold">
-            {formatINR(convertUsdToInr(prediction.metadata.currentPrice))}
+            {formatINR(currentPrice)}
           </p>
           <div className={`text-sm ${prediction.metadata.change >= 0 ? 'positive-value' : 'negative-value'}`}>
             {prediction.metadata.change >= 0 ? '+' : ''}
-            {formatINR(convertUsdToInr(prediction.metadata.change))} ({prediction.metadata.changePercent.toFixed(2)}%)
+            {formatINR(priceChange)} ({prediction.metadata.changePercent.toFixed(2)}%)
           </div>
         </div>
       </div>
@@ -199,10 +206,12 @@ const PredictionChart: React.FC<PredictionChartProps> = ({ prediction }) => {
         </ChartContainer>
       </div>
       
-      {/* Exchange rate info */}
-      <div className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400 border-t pt-3">
-        {getExchangeRateInfo()}
-      </div>
+      {/* Exchange rate info - only show for US stocks */}
+      {shouldConvertToINR && (
+        <div className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400 border-t pt-3">
+          {getExchangeRateInfo()}
+        </div>
+      )}
     </div>
   );
 };

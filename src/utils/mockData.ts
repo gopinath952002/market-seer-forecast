@@ -1,274 +1,173 @@
-// Generate realistic stock price data and predictions
-import { format, subDays } from 'date-fns';
-
-export interface StockData {
-  date: string; // ISO date string
-  price: number;
-  volume: number;
-}
-
-export interface PredictionData {
-  date: string; // ISO date string
-  actual?: number; // Historical actual price (if available)
-  predicted: number;
-  confidenceInterval?: string; // Confidence interval for predictions
-  lowerBound?: string; // Lower bound of confidence interval
-  upperBound?: string; // Upper bound of confidence interval
-}
-
-export interface StockMetadata {
-  ticker: string;
-  name: string;
-  currentPrice: number;
-  previousClose: number;
-  change: number;
-  changePercent: number;
-}
 
 export interface StockPrediction {
   ticker: string;
-  metadata: StockMetadata;
-  historicalData: StockData[];
-  predictionData: PredictionData[];
+  metadata: {
+    ticker: string;
+    name: string;
+    currentPrice: number;
+    previousClose: number;
+    change: number;
+    changePercent: number;
+  };
+  historicalData: Array<{
+    date: string;
+    price: number;
+    volume: number;
+  }>;
+  predictionData: Array<{
+    date: string;
+    actual: number | null;
+    predicted: number;
+  }>;
   metrics: {
-    mse: number; // Mean squared error
-    rmse: number; // Root mean squared error
-    mae: number; // Mean absolute error
-    accuracy: number; // Percentage accuracy
-    confidence: number; // Prediction confidence (0-1)
+    mse: number;
+    accuracy: number;
+    confidence: number;
+    rmse: number;
+    mae: number;
   };
   indicators: {
-    rsi: number; // Relative Strength Index
-    macd: number; // MACD
-    bollingerUpper: number; // Bollinger Band Upper
-    bollingerLower: number; // Bollinger Band Lower
-    recommendation: "Strong Buy" | "Buy" | "Hold" | "Sell" | "Strong Sell";
+    rsi: number;
+    macd: number;
+    bollingerUpper: number;
+    bollingerLower: number;
+    recommendation: string;
   };
 }
 
-// Helper functions to generate realistic mock data
-const getRandomChange = (volatility = 0.02): number => {
-  return (Math.random() * 2 - 1) * volatility;
+// Realistic Indian stock prices in INR
+const indianStockPrices: Record<string, { current: number; name: string }> = {
+  'TCS': { current: 3461.25, name: 'Tata Consultancy Services' },
+  'INFY': { current: 1571.80, name: 'Infosys Limited' },
+  'RELIANCE': { current: 2456.70, name: 'Reliance Industries Limited' },
+  'HDFCBANK': { current: 1645.30, name: 'HDFC Bank Limited' },
+  'SBIN': { current: 817.45, name: 'State Bank of India' },
+  'ITC': { current: 462.85, name: 'ITC Limited' },
+  'WIPRO': { current: 542.20, name: 'Wipro Limited' },
+  'LT': { current: 3584.90, name: 'Larsen & Toubro Limited' }
 };
 
-const getRandomVolume = (baseVolume = 1000000): number => {
-  return Math.floor(baseVolume * (0.5 + Math.random()));
+// US stock prices in USD (these will be converted to INR)
+const usStockPrices: Record<string, { current: number; name: string }> = {
+  'AAPL': { current: 189.25, name: 'Apple Inc.' },
+  'GOOGL': { current: 142.85, name: 'Alphabet Inc.' },
+  'MSFT': { current: 378.90, name: 'Microsoft Corporation' },
+  'AMZN': { current: 145.75, name: 'Amazon.com Inc.' },
+  'TSLA': { current: 234.50, name: 'Tesla Inc.' },
+  'NVDA': { current: 875.25, name: 'NVIDIA Corporation' },
+  'META': { current: 298.45, name: 'Meta Platforms Inc.' }
 };
 
-export const generateHistoricalData = (
-  ticker: string,
-  days = 90,
-  basePrice = 150
-): StockData[] => {
-  const data: StockData[] = [];
-  let price = basePrice;
+export const getStockPrediction = (ticker: string): StockPrediction => {
+  // Check if it's an Indian stock (use INR prices directly) or US stock (use USD prices)
+  const isIndianStock = indianStockPrices[ticker];
+  const isUSStock = usStockPrices[ticker];
   
-  for (let i = days; i >= 0; i--) {
-    const date = format(subDays(new Date(), i), 'yyyy-MM-dd');
-    const change = getRandomChange();
-    price = price * (1 + change);
+  let currentPrice: number;
+  let companyName: string;
+  
+  if (isIndianStock) {
+    currentPrice = indianStockPrices[ticker].current;
+    companyName = indianStockPrices[ticker].name;
+  } else if (isUSStock) {
+    currentPrice = usStockPrices[ticker].current;
+    companyName = usStockPrices[ticker].name;
+  } else {
+    // Default fallback for unknown tickers (assume US stock)
+    currentPrice = 150 + Math.random() * 100;
+    companyName = `${ticker} Corporation`;
+  }
+  
+  // Calculate previous close (small random change)
+  const changePercent = (Math.random() - 0.5) * 6; // -3% to +3%
+  const previousClose = currentPrice / (1 + changePercent / 100);
+  const change = currentPrice - previousClose;
+  
+  // Generate historical data (past 60 days)
+  const historicalData = [];
+  let price = currentPrice;
+  
+  for (let i = 59; i >= 0; i--) {
+    const date = new Date();
+    date.setDate(date.getDate() - i);
     
-    data.push({
-      date,
-      price: parseFloat(price.toFixed(2)),
-      volume: getRandomVolume()
+    // Add some realistic volatility
+    const dailyChange = (Math.random() - 0.5) * 0.04; // -2% to +2% daily
+    price = price * (1 + dailyChange);
+    
+    historicalData.push({
+      date: date.toISOString().split('T')[0],
+      price: Math.max(price, currentPrice * 0.7), // Prevent unrealistic drops
+      volume: Math.floor(Math.random() * 1000000) + 100000
     });
   }
   
-  return data;
-};
-
-export const generatePredictions = (
-  historicalData: StockData[], 
-  futureDays = 14,
-  errorMargin = 0.05
-): PredictionData[] => {
-  const predictions: PredictionData[] = [];
+  // Ensure the last historical price matches current price
+  historicalData[historicalData.length - 1].price = currentPrice;
   
-  // Include some historical data with predictions for comparison
-  const comparisonDays = 7;
-  const startIndex = Math.max(0, historicalData.length - comparisonDays);
+  // Generate prediction data (next 30 days)
+  const predictionData = [];
+  let predictedPrice = currentPrice;
   
-  // Add predictions for existing data (to show comparison)
-  for (let i = startIndex; i < historicalData.length; i++) {
-    const item = historicalData[i];
-    const error = (Math.random() * 2 - 1) * errorMargin;
-    const predictedPrice = item.price * (1 + error);
-    const interval = predictedPrice * 0.02; // 2% confidence interval
+  for (let i = 1; i <= 30; i++) {
+    const date = new Date();
+    date.setDate(date.getDate() + i);
     
-    predictions.push({
-      date: item.date,
-      actual: item.price,
-      predicted: parseFloat(predictedPrice.toFixed(2)),
-      confidenceInterval: interval.toFixed(2),
-      lowerBound: (predictedPrice - interval).toFixed(2),
-      upperBound: (predictedPrice + interval).toFixed(2)
+    // Generate trend with some randomness
+    const trendDirection = Math.random() > 0.5 ? 1 : -1;
+    const dailyChange = trendDirection * Math.random() * 0.02; // Up to 2% daily change
+    predictedPrice = predictedPrice * (1 + dailyChange);
+    
+    predictionData.push({
+      date: date.toISOString().split('T')[0],
+      actual: null,
+      predicted: Math.max(predictedPrice, currentPrice * 0.8) // Prevent unrealistic predictions
     });
   }
   
-  // Generate future predictions
-  let lastPrice = historicalData[historicalData.length - 1].price;
-  const today = new Date();
+  // Generate realistic technical indicators
+  const rsi = 30 + Math.random() * 40; // 30-70 range
+  const macd = (Math.random() - 0.5) * 2; // -1 to 1
   
-  for (let i = 1; i <= futureDays; i++) {
-    const change = getRandomChange();
-    lastPrice = lastPrice * (1 + change);
-    const date = format(subDays(today, -i), 'yyyy-MM-dd');
-    const predictedPrice = parseFloat(lastPrice.toFixed(2));
-    const interval = predictedPrice * (0.02 + i * 0.005); // Growing uncertainty
-    
-    predictions.push({
-      date,
-      predicted: predictedPrice,
-      confidenceInterval: interval.toFixed(2),
-      lowerBound: (predictedPrice - interval).toFixed(2),
-      upperBound: (predictedPrice + interval).toFixed(2)
-    });
+  // Bollinger bands (2% above/below current price)
+  const bollingerUpper = currentPrice * 1.02;
+  const bollingerLower = currentPrice * 0.98;
+  
+  // Determine recommendation based on RSI
+  let recommendation: string;
+  if (rsi > 60) {
+    recommendation = Math.random() > 0.5 ? 'Buy' : 'Strong Buy';
+  } else if (rsi < 40) {
+    recommendation = Math.random() > 0.5 ? 'Sell' : 'Strong Sell';
+  } else {
+    recommendation = 'Hold';
   }
-  
-  return predictions;
-};
-
-export const mockStockInfo: Record<string, { name: string; basePrice: number }> = {
-  'RELIANCE': { name: 'Reliance Industries Limited', basePrice: 2432.55 },
-  'TCS': { name: 'Tata Consultancy Services', basePrice: 3567.80 },
-  'INFY': { name: 'Infosys Limited', basePrice: 1432.65 },
-  'HDFCBANK': { name: 'HDFC Bank Limited', basePrice: 1678.90 },
-  'ICICIBANK': { name: 'ICICI Bank Limited', basePrice: 945.30 },
-  'SBIN': { name: 'State Bank of India', basePrice: 567.45 },
-  'WIPRO': { name: 'Wipro Limited', basePrice: 432.75 },
-  'HINDUNILVR': { name: 'Hindustan Unilever Limited', basePrice: 2567.80 },
-  'BHARTIARTL': { name: 'Bharti Airtel Limited', basePrice: 876.55 },
-  'TATAMOTORS': { name: 'Tata Motors Limited', basePrice: 654.30 },
-  'ASIANPAINT': { name: 'Asian Paints Limited', basePrice: 3245.60 },
-  'MARUTI': { name: 'Maruti Suzuki India Limited', basePrice: 9876.45 },
-  'ADANIENT': { name: 'Adani Enterprises Limited', basePrice: 2432.55 },
-  'BAJFINANCE': { name: 'Bajaj Finance Limited', basePrice: 6789.30 },
-  'ITC': { name: 'ITC Limited', basePrice: 432.65 },
-  
-  'AAPL': { name: 'Apple Inc.', basePrice: 173.50 },
-  'MSFT': { name: 'Microsoft Corporation', basePrice: 329.80 },
-  'GOOG': { name: 'Alphabet Inc.', basePrice: 132.60 },
-  'GOOGL': { name: 'Alphabet Inc. Class A', basePrice: 131.85 },
-  'AMZN': { name: 'Amazon.com, Inc.', basePrice: 139.75 },
-  'META': { name: 'Meta Platforms, Inc.', basePrice: 302.85 },
-  'TSLA': { name: 'Tesla, Inc.', basePrice: 251.45 },
-  'NVDA': { name: 'NVIDIA Corporation', basePrice: 432.50 },
-  'NFLX': { name: 'Netflix, Inc.', basePrice: 434.20 },
-  'INTC': { name: 'Intel Corporation', basePrice: 35.20 },
-  'AMD': { name: 'Advanced Micro Devices, Inc.', basePrice: 108.45 },
-  'CSCO': { name: 'Cisco Systems, Inc.', basePrice: 48.75 },
-  'ADBE': { name: 'Adobe Inc.', basePrice: 412.30 },
-  'CRM': { name: 'Salesforce, Inc.', basePrice: 251.90 },
-  'PYPL': { name: 'PayPal Holdings, Inc.', basePrice: 62.80 },
-
-  'JPM': { name: 'JPMorgan Chase & Co.', basePrice: 141.20 },
-  'BAC': { name: 'Bank of America Corporation', basePrice: 33.45 },
-  'WFC': { name: 'Wells Fargo & Company', basePrice: 43.60 },
-  'C': { name: 'Citigroup Inc.', basePrice: 52.70 },
-  'GS': { name: 'The Goldman Sachs Group, Inc.', basePrice: 368.50 },
-  'MS': { name: 'Morgan Stanley', basePrice: 87.90 },
-  'V': { name: 'Visa Inc.', basePrice: 235.40 },
-  'MA': { name: 'Mastercard Incorporated', basePrice: 371.60 },
-  'AXP': { name: 'American Express Company', basePrice: 169.30 },
-  'BLK': { name: 'BlackRock, Inc.', basePrice: 715.20 },
-  
-  'JNJ': { name: 'Johnson & Johnson', basePrice: 162.40 },
-  'PFE': { name: 'Pfizer Inc.', basePrice: 30.25 },
-  'ABBV': { name: 'AbbVie Inc.', basePrice: 167.85 },
-  'MRK': { name: 'Merck & Co., Inc.', basePrice: 124.70 },
-  'UNH': { name: 'UnitedHealth Group Incorporated', basePrice: 515.30 },
-  'CVS': { name: 'CVS Health Corporation', basePrice: 75.60 },
-  'ABT': { name: 'Abbott Laboratories', basePrice: 111.20 },
-  'TMO': { name: 'Thermo Fisher Scientific Inc.', basePrice: 575.40 },
-  'DHR': { name: 'Danaher Corporation', basePrice: 248.90 },
-  'LLY': { name: 'Eli Lilly and Company', basePrice: 482.70 },
-  
-  'WMT': { name: 'Walmart Inc.', basePrice: 59.60 },
-  'PG': { name: 'The Procter & Gamble Company', basePrice: 162.35 },
-  'KO': { name: 'The Coca-Cola Company', basePrice: 58.70 },
-  'PEP': { name: 'PepsiCo, Inc.', basePrice: 172.80 },
-  'COST': { name: 'Costco Wholesale Corporation', basePrice: 564.30 },
-  'MCD': { name: 'McDonald\'s Corporation', basePrice: 285.90 },
-  'NKE': { name: 'NIKE, Inc.', basePrice: 103.40 },
-  'SBUX': { name: 'Starbucks Corporation', basePrice: 95.70 },
-  'HD': { name: 'The Home Depot, Inc.', basePrice: 337.80 },
-  'TGT': { name: 'Target Corporation', basePrice: 141.35 },
-  
-  'XOM': { name: 'Exxon Mobil Corporation', basePrice: 112.80 },
-  'CVX': { name: 'Chevron Corporation', basePrice: 160.25 },
-  'BA': { name: 'The Boeing Company', basePrice: 188.30 },
-  'CAT': { name: 'Caterpillar Inc.', basePrice: 278.45 },
-  'GE': { name: 'General Electric Company', basePrice: 124.60 },
-  'MMM': { name: '3M Company', basePrice: 102.30 },
-  'HON': { name: 'Honeywell International Inc.', basePrice: 201.75 },
-  'UPS': { name: 'United Parcel Service, Inc.', basePrice: 153.40 },
-  'RTX': { name: 'RTX Corporation', basePrice: 87.65 },
-  'DE': { name: 'Deere & Company', basePrice: 398.20 }
-};
-
-export const getStockPrediction = (ticker: string): StockPrediction | null => {
-  const stockInfo = mockStockInfo[ticker.toUpperCase()];
-  
-  if (!stockInfo) {
-    return null;
-  }
-  
-  const historicalData = generateHistoricalData(
-    ticker, 
-    90, 
-    stockInfo.basePrice
-  );
-  
-  const lastClose = historicalData[historicalData.length - 1].price;
-  const prevClose = historicalData[historicalData.length - 2].price;
-  const change = lastClose - prevClose;
-  const changePercent = (change / prevClose) * 100;
-  
-  const predictionData = generatePredictions(historicalData);
-  
-  // Random indicators but realistic ranges
-  const rsi = 30 + Math.random() * 40; // Between 30-70
-  const macd = -2 + Math.random() * 4; // Between -2 and 2
-  const bollingerRange = lastClose * 0.1; // 10% range for Bollinger bands
-  
-  // Determine recommendation based on indicators
-  let recommendation: "Strong Buy" | "Buy" | "Hold" | "Sell" | "Strong Sell";
-  if (rsi < 30) recommendation = "Strong Buy";
-  else if (rsi < 40) recommendation = "Buy";
-  else if (rsi < 60) recommendation = "Hold";
-  else if (rsi < 70) recommendation = "Sell";
-  else recommendation = "Strong Sell";
   
   return {
     ticker,
     metadata: {
       ticker,
-      name: stockInfo.name,
-      currentPrice: lastClose,
-      previousClose: prevClose,
+      name: companyName,
+      currentPrice,
+      previousClose,
       change,
       changePercent
     },
     historicalData,
     predictionData,
     metrics: {
-      mse: parseFloat((Math.random() * 10).toFixed(2)),
-      rmse: parseFloat((Math.random() * 3).toFixed(2)),
-      mae: parseFloat((Math.random() * 2).toFixed(2)),
-      accuracy: parseFloat((70 + Math.random() * 20).toFixed(2)),
-      confidence: parseFloat((0.6 + Math.random() * 0.3).toFixed(2))
+      mse: 2.5 + Math.random() * 1.5,
+      accuracy: 85 + Math.random() * 10,
+      confidence: 0.75 + Math.random() * 0.2,
+      rmse: 1.2 + Math.random() * 0.8,
+      mae: 0.8 + Math.random() * 0.6
     },
     indicators: {
-      rsi: parseFloat(rsi.toFixed(2)),
-      macd: parseFloat(macd.toFixed(2)),
-      bollingerUpper: parseFloat((lastClose + bollingerRange).toFixed(2)),
-      bollingerLower: parseFloat((lastClose - bollingerRange).toFixed(2)),
+      rsi: Math.round(rsi * 100) / 100,
+      macd: Math.round(macd * 100) / 100,
+      bollingerUpper,
+      bollingerLower,
       recommendation
     }
   };
 };
-
-export const popularTickers = [
-  'AAPL', 'MSFT', 'RELIANCE', 'TCS', 'INFY', 'HDFCBANK', 'ICICIBANK', 'SBIN', 'TSLA', 'AMZN'
-];

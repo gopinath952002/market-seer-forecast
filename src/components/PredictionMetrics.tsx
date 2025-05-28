@@ -20,7 +20,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from '@/components/ui/button';
 import DisclaimerAlert from './DisclaimerAlert';
-import { convertUsdToInr, formatINR } from '@/utils/currencyUtils';
+import { convertUsdToInr, formatINR, isIndianStock } from '@/utils/currencyUtils';
 
 interface PredictionMetricsProps {
   prediction: StockPrediction;
@@ -30,10 +30,13 @@ const PredictionMetrics: React.FC<PredictionMetricsProps> = ({ prediction }) => 
   const { metrics, indicators } = prediction;
   const [showEducation, setShowEducation] = useState(false);
   
-  // Convert current price to INR for Bollinger context
-  const currentPriceINR = convertUsdToInr(prediction.metadata.currentPrice);
-  const bollingerUpperINR = convertUsdToInr(indicators.bollingerUpper);
-  const bollingerLowerINR = convertUsdToInr(indicators.bollingerLower);
+  // Check if this is an Indian stock - if so, don't convert prices
+  const shouldConvertToINR = !isIndianStock(prediction.ticker);
+  
+  // Convert current price to INR for Bollinger context only if it's a US stock
+  const currentPriceINR = shouldConvertToINR ? convertUsdToInr(prediction.metadata.currentPrice) : prediction.metadata.currentPrice;
+  const bollingerUpperINR = shouldConvertToINR ? convertUsdToInr(indicators.bollingerUpper) : indicators.bollingerUpper;
+  const bollingerLowerINR = shouldConvertToINR ? convertUsdToInr(indicators.bollingerLower) : indicators.bollingerLower;
   
   // Determine if prediction is relatively bullish or bearish
   const isBullish = indicators.recommendation === "Buy" || indicators.recommendation === "Strong Buy";

@@ -4,7 +4,7 @@ import { format, parseISO } from 'date-fns';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Legend, ReferenceArea, ResponsiveContainer } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Info } from 'lucide-react';
-import { convertUsdToInr, formatINR, formatINRShort } from '@/utils/currencyUtils';
+import { convertUsdToInr, formatINR, formatINRShort, isIndianStock } from '@/utils/currencyUtils';
 
 interface BollingerItem {
   date: string;
@@ -14,6 +14,7 @@ interface BollingerItem {
   upperBand: number;
   lowerBand: number;
   middleBand: number;
+  ticker?: string;
 }
 
 interface BollingerBandsChartProps {
@@ -24,15 +25,19 @@ const BollingerBandsChart: React.FC<BollingerBandsChartProps> = ({ bollingerData
   const [activeZoom, setActiveZoom] = useState<{start: string; end: string} | null>(null);
   const [startIndex, setStartIndex] = useState<number | null>(null);
   
-  // Convert all price data to INR
+  // Check if this is an Indian stock - if so, don't convert prices
+  const ticker = bollingerData.length > 0 ? bollingerData[0].ticker : '';
+  const shouldConvertToINR = ticker ? !isIndianStock(ticker) : true;
+  
+  // Convert all price data to INR only if it's a US stock
   const convertedData = bollingerData.map(item => ({
     ...item,
-    price: item.price ? convertUsdToInr(item.price) : undefined,
-    actual: item.actual ? convertUsdToInr(item.actual) : item.actual,
-    predicted: item.predicted ? convertUsdToInr(item.predicted) : undefined,
-    upperBand: convertUsdToInr(item.upperBand),
-    lowerBand: convertUsdToInr(item.lowerBand),
-    middleBand: convertUsdToInr(item.middleBand)
+    price: item.price ? (shouldConvertToINR ? convertUsdToInr(item.price) : item.price) : undefined,
+    actual: item.actual ? (shouldConvertToINR ? convertUsdToInr(item.actual) : item.actual) : item.actual,
+    predicted: item.predicted ? (shouldConvertToINR ? convertUsdToInr(item.predicted) : item.predicted) : undefined,
+    upperBand: shouldConvertToINR ? convertUsdToInr(item.upperBand) : item.upperBand,
+    lowerBand: shouldConvertToINR ? convertUsdToInr(item.lowerBand) : item.lowerBand,
+    middleBand: shouldConvertToINR ? convertUsdToInr(item.middleBand) : item.middleBand
   }));
   
   const formatXAxis = (dateStr: string) => {

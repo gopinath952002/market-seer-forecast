@@ -31,3 +31,9 @@ export const formatINRShort = (amount: number): string => {
 export const getExchangeRateInfo = (): string => {
   return `Exchange Rate: 1 USD = ₹${USD_TO_INR_RATE}`;
 };
+
+// Check if a ticker is an Indian stock (trades in INR)
+export const isIndianStock = (ticker: string): boolean => {
+  const indianStocks = ['TCS', 'INFY', 'RELIANCE', 'HDFCBANK', 'SBIN', 'ITC', 'WIPRO', 'LT'];
+  return indianStocks.includes(ticker);
+};
