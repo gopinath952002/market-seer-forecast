@@ -133,7 +133,8 @@ const PredictionChart: React.FC<PredictionChartProps> = ({ prediction }) => {
                         item.date === entry.payload.date && 
                         item.predicted === value
                       );
-                      const confInterval = item?.confidenceInterval;
+                      // Add type check for confidenceInterval
+                      const confInterval = item && 'confidenceInterval' in item ? item.confidenceInterval : null;
                       return [
                         `${formatINR(Number(value))}${confInterval ? ` ± ${formatINR(confInterval)}` : ''}`, 
                         'Prediction'
