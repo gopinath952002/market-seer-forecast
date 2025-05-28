@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { format, parseISO } from 'date-fns';
 import { StockPrediction } from '@/utils/mockData';
