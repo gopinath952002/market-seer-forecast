@@ -4,6 +4,7 @@ import { format, parseISO } from 'date-fns';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Legend, ReferenceArea, ResponsiveContainer } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Info } from 'lucide-react';
+import { convertUsdToInr, formatINR, formatINRShort } from '@/utils/currencyUtils';
 
 interface BollingerItem {
   date: string;
@@ -22,6 +23,17 @@ interface BollingerBandsChartProps {
 const BollingerBandsChart: React.FC<BollingerBandsChartProps> = ({ bollingerData }) => {
   const [activeZoom, setActiveZoom] = useState<{start: string; end: string} | null>(null);
   const [startIndex, setStartIndex] = useState<number | null>(null);
+  
+  // Convert all price data to INR
+  const convertedData = bollingerData.map(item => ({
+    ...item,
+    price: item.price ? convertUsdToInr(item.price) : undefined,
+    actual: item.actual ? convertUsdToInr(item.actual) : item.actual,
+    predicted: item.predicted ? convertUsdToInr(item.predicted) : undefined,
+    upperBand: convertUsdToInr(item.upperBand),
+    lowerBand: convertUsdToInr(item.lowerBand),
+    middleBand: convertUsdToInr(item.middleBand)
+  }));
   
   const formatXAxis = (dateStr: string) => {
     return format(parseISO(dateStr), 'MMM dd');
@@ -73,8 +85,8 @@ const BollingerBandsChart: React.FC<BollingerBandsChartProps> = ({ bollingerData
     const endIndex = e.activeTooltipIndex;
     
     if (Math.abs(endIndex - startIndex) > 2) {
-      const start = bollingerData[Math.min(startIndex, endIndex)].date;
-      const end = bollingerData[Math.max(startIndex, endIndex)].date;
+      const start = convertedData[Math.min(startIndex, endIndex)].date;
+      const end = convertedData[Math.max(startIndex, endIndex)].date;
       
       setActiveZoom({ start, end });
     }
@@ -109,7 +121,7 @@ const BollingerBandsChart: React.FC<BollingerBandsChartProps> = ({ bollingerData
       <ChartContainer config={bollingerConfig} className="w-full h-full">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart 
-            data={bollingerData} 
+            data={convertedData} 
             margin={{ top: 20, right: 30, bottom: 20, left: 20 }}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
@@ -125,15 +137,16 @@ const BollingerBandsChart: React.FC<BollingerBandsChartProps> = ({ bollingerData
             />
             <YAxis
               tick={{ fontSize: 12 }}
+              tickFormatter={formatINRShort}
               domain={['dataMin - 10', 'dataMax + 10']}
-              label={{ value: 'Price ($)', angle: -90, position: 'insideLeft', offset: -5, fontSize: 12 }}
+              label={{ value: 'Price (₹)', angle: -90, position: 'insideLeft', offset: -5, fontSize: 12 }}
               width={60}
             />
             <ChartTooltip 
               content={
                 <ChartTooltipContent 
                   formatter={(value: any, name: any) => {
-                    return [`$${Number(value).toFixed(2)}`, name];
+                    return [formatINR(Number(value)), name];
                   }}
                   labelFormatter={(label) => {
                     return `${format(parseISO(String(label)), 'MMM dd, yyyy')}`;
@@ -178,8 +191,8 @@ const BollingerBandsChart: React.FC<BollingerBandsChartProps> = ({ bollingerData
             
             {startIndex !== null && (
               <ReferenceArea 
-                x1={bollingerData[startIndex].date}
-                x2={bollingerData[startIndex].date} 
+                x1={convertedData[startIndex].date}
+                x2={convertedData[startIndex].date} 
                 strokeOpacity={0.3}
                 fill="#8884d8"
                 fillOpacity={0.1}

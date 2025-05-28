@@ -20,6 +20,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from '@/components/ui/button';
 import DisclaimerAlert from './DisclaimerAlert';
+import { convertUsdToInr, formatINR } from '@/utils/currencyUtils';
 
 interface PredictionMetricsProps {
   prediction: StockPrediction;
@@ -28,6 +29,11 @@ interface PredictionMetricsProps {
 const PredictionMetrics: React.FC<PredictionMetricsProps> = ({ prediction }) => {
   const { metrics, indicators } = prediction;
   const [showEducation, setShowEducation] = useState(false);
+  
+  // Convert current price to INR for Bollinger context
+  const currentPriceINR = convertUsdToInr(prediction.metadata.currentPrice);
+  const bollingerUpperINR = convertUsdToInr(indicators.bollingerUpper);
+  const bollingerLowerINR = convertUsdToInr(indicators.bollingerLower);
   
   // Determine if prediction is relatively bullish or bearish
   const isBullish = indicators.recommendation === "Buy" || indicators.recommendation === "Strong Buy";
@@ -50,9 +56,9 @@ const PredictionMetrics: React.FC<PredictionMetricsProps> = ({ prediction }) => 
   const rsiContext = getRSIEducationalContext(indicators.rsi);
   const macdContext = getMACDEducationalContext(indicators.macd);
   const bollingerContext = getBollingerEducationalContext(
-    prediction.metadata.currentPrice,
-    indicators.bollingerUpper,
-    indicators.bollingerLower
+    currentPriceINR,
+    bollingerUpperINR,
+    bollingerLowerINR
   );
   const recommendationContext = getRecommendationContext(indicators.recommendation, indicators.rsi);
 
@@ -168,7 +174,7 @@ const PredictionMetrics: React.FC<PredictionMetricsProps> = ({ prediction }) => 
                         <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
                           Bollinger Upper <Info className="h-3 w-3 ml-1 text-gray-400" />
                         </p>
-                        <p className="text-lg font-bold">${indicators.bollingerUpper}</p>
+                        <p className="text-lg font-bold">{formatINR(bollingerUpperINR)}</p>
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -184,7 +190,7 @@ const PredictionMetrics: React.FC<PredictionMetricsProps> = ({ prediction }) => 
                         <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
                           Bollinger Lower <Info className="h-3 w-3 ml-1 text-gray-400" />
                         </p>
-                        <p className="text-lg font-bold">${indicators.bollingerLower}</p>
+                        <p className="text-lg font-bold">{formatINR(bollingerLowerINR)}</p>
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>

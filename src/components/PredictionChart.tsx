@@ -12,6 +12,7 @@ import {
   ChartTooltipContent
 } from '@/components/ui/chart';
 import { addConfidenceIntervals } from './technical-indicators/indicatorUtils';
+import { convertUsdToInr, formatINR, formatINRShort, getExchangeRateInfo } from '@/utils/currencyUtils';
 
 interface PredictionChartProps {
   prediction: StockPrediction;
@@ -24,7 +25,7 @@ const PredictionChart: React.FC<PredictionChartProps> = ({ prediction }) => {
   const combinedData = [
     ...prediction.historicalData.map(item => ({
       date: item.date,
-      actual: item.price,
+      actual: convertUsdToInr(item.price),
       predicted: null,
       lowerBound: null,
       upperBound: null,
@@ -32,11 +33,11 @@ const PredictionChart: React.FC<PredictionChartProps> = ({ prediction }) => {
     })),
     ...enhancedPredictionData.map(item => ({
       date: item.date,
-      actual: item.actual,
-      predicted: item.predicted,
-      lowerBound: item.lowerBound || null,
-      upperBound: item.upperBound || null,
-      confidenceInterval: item.confidenceInterval || null,
+      actual: item.actual ? convertUsdToInr(item.actual) : null,
+      predicted: convertUsdToInr(item.predicted),
+      lowerBound: item.lowerBound ? convertUsdToInr(parseFloat(item.lowerBound)) : null,
+      upperBound: item.upperBound ? convertUsdToInr(parseFloat(item.upperBound)) : null,
+      confidenceInterval: item.confidenceInterval ? convertUsdToInr(parseFloat(item.confidenceInterval)) : null,
       isPrediction: true
     }))
   ].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -49,7 +50,7 @@ const PredictionChart: React.FC<PredictionChartProps> = ({ prediction }) => {
   };
 
   const formatYAxis = (value: number) => {
-    return `$${value.toFixed(0)}`;
+    return formatINRShort(value);
   };
 
   const chartConfig = {
@@ -77,7 +78,7 @@ const PredictionChart: React.FC<PredictionChartProps> = ({ prediction }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm p-5 h-[400px] w-full max-w-3xl mx-auto mb-8">
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm p-5 w-full max-w-3xl mx-auto mb-8">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-lg font-semibold">
@@ -89,109 +90,119 @@ const PredictionChart: React.FC<PredictionChartProps> = ({ prediction }) => {
         </div>
         <div className="text-right">
           <p className="text-2xl font-bold">
-            ${prediction.metadata.currentPrice.toFixed(2)}
+            {formatINR(convertUsdToInr(prediction.metadata.currentPrice))}
           </p>
           <div className={`text-sm ${prediction.metadata.change >= 0 ? 'positive-value' : 'negative-value'}`}>
             {prediction.metadata.change >= 0 ? '+' : ''}
-            {prediction.metadata.change.toFixed(2)} ({prediction.metadata.changePercent.toFixed(2)}%)
+            {formatINR(convertUsdToInr(prediction.metadata.change))} ({prediction.metadata.changePercent.toFixed(2)}%)
           </div>
         </div>
       </div>
       
-      <ChartContainer config={chartConfig} className="h-[80%]">
-        <LineChart data={combinedData} margin={{ top: 5, right: 20, bottom: 25, left: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#ccc" opacity={0.2} />
-          <XAxis 
-            dataKey="date" 
-            tickFormatter={formatXAxis}
-            tick={{ fontSize: 12, fill: '#888' }}
-            padding={{ left: 10, right: 10 }}
-            label={{ value: 'Date (Historical → Prediction)', position: 'insideBottom', offset: -15, fontSize: 12 }}
-          />
-          <YAxis 
-            tickFormatter={formatYAxis} 
-            tick={{ fontSize: 12, fill: '#888' }}
-            domain={['auto', 'auto']}
-            label={{ value: 'Price (USD)', angle: -90, position: 'insideLeft', offset: -5, fontSize: 12 }}
-          />
-          <ChartTooltip 
-            content={
-              <ChartTooltipContent 
-                formatter={(value: any, name: any, entry: any) => {
-                  if (name === 'actual') return [`$${Number(value).toFixed(2)}`, 'Historical'];
-                  if (name === 'predicted') {
-                    const item = combinedData.find(item => 
-                      item.date === entry.payload.date && 
-                      item.predicted === value
-                    );
-                    const confInterval = item && 'confidenceInterval' in item ? item.confidenceInterval : null;
-                    return [`$${Number(value).toFixed(2)}${confInterval ? ` ± $${confInterval}` : ''}`, 'Prediction'];
-                  }
-                  return [`$${Number(value).toFixed(2)}`, name];
-                }}
-                labelFormatter={(label) => format(parseISO(String(label)), 'MMM dd, yyyy')}
-              />
-            } 
-          />
-          <Legend />
-          
-          {/* Confidence interval area */}
-          <defs>
-            <linearGradient id="confidenceGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="var(--color-confidenceBounds)" stopOpacity={0.8}/>
-              <stop offset="95%" stopColor="var(--color-confidenceBounds)" stopOpacity={0.2}/>
-            </linearGradient>
-          </defs>
-          
-          <Area 
-            type="monotone"
-            dataKey="upperBound"
-            stroke="none"
-            fill="url(#confidenceGradient)"
-            fillOpacity={1}
-            name="upperBound"
-            activeDot={false}
-            legendType="none"
-          />
-          
-          <Area 
-            type="monotone"
-            dataKey="lowerBound"
-            stroke="none"
-            fillOpacity={0}
-            name="lowerBound"
-            activeDot={false}
-            legendType="none"
-          />
-          
-          <Line 
-            type="monotone" 
-            dataKey="actual" 
-            stroke="var(--color-actual)" 
-            strokeWidth={2}
-            dot={false}
-            name="actual"
-          />
-          <Line 
-            type="monotone" 
-            dataKey="predicted" 
-            stroke="var(--color-predicted)" 
-            strokeWidth={2} 
-            strokeDasharray="5 5"
-            dot={false}
-            name="predicted"
-            isAnimationActive={true}
-          />
-          {predictionStartDate && (
-            <ReferenceLine 
-              x={predictionStartDate} 
-              stroke="#888" 
-              strokeDasharray="3 3"
-              label={{ value: 'Today', position: 'insideTopRight', fill: '#888', fontSize: 11 }}
+      <div className="h-[400px]">
+        <ChartContainer config={chartConfig} className="h-full">
+          <LineChart data={combinedData} margin={{ top: 5, right: 20, bottom: 25, left: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#ccc" opacity={0.2} />
+            <XAxis 
+              dataKey="date" 
+              tickFormatter={formatXAxis}
+              tick={{ fontSize: 12, fill: '#888' }}
+              padding={{ left: 10, right: 10 }}
+              label={{ value: 'Date (Historical → Prediction)', position: 'insideBottom', offset: -15, fontSize: 12 }}
             />
-          )}
-        </LineChart>
-      </ChartContainer>
+            <YAxis 
+              tickFormatter={formatYAxis} 
+              tick={{ fontSize: 12, fill: '#888' }}
+              domain={['auto', 'auto']}
+              label={{ value: 'Price (INR)', angle: -90, position: 'insideLeft', offset: -5, fontSize: 12 }}
+            />
+            <ChartTooltip 
+              content={
+                <ChartTooltipContent 
+                  formatter={(value: any, name: any, entry: any) => {
+                    if (name === 'actual') return [formatINR(Number(value)), 'Historical'];
+                    if (name === 'predicted') {
+                      const item = combinedData.find(item => 
+                        item.date === entry.payload.date && 
+                        item.predicted === value
+                      );
+                      const confInterval = item && 'confidenceInterval' in item ? item.confidenceInterval : null;
+                      return [
+                        `${formatINR(Number(value))}${confInterval ? ` ± ${formatINR(confInterval)}` : ''}`, 
+                        'Prediction'
+                      ];
+                    }
+                    return [formatINR(Number(value)), name];
+                  }}
+                  labelFormatter={(label) => format(parseISO(String(label)), 'MMM dd, yyyy')}
+                />
+              } 
+            />
+            <Legend />
+            
+            {/* Confidence interval area */}
+            <defs>
+              <linearGradient id="confidenceGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="var(--color-confidenceBounds)" stopOpacity={0.8}/>
+                <stop offset="95%" stopColor="var(--color-confidenceBounds)" stopOpacity={0.2}/>
+              </linearGradient>
+            </defs>
+            
+            <Area 
+              type="monotone"
+              dataKey="upperBound"
+              stroke="none"
+              fill="url(#confidenceGradient)"
+              fillOpacity={1}
+              name="upperBound"
+              activeDot={false}
+              legendType="none"
+            />
+            
+            <Area 
+              type="monotone"
+              dataKey="lowerBound"
+              stroke="none"
+              fillOpacity={0}
+              name="lowerBound"
+              activeDot={false}
+              legendType="none"
+            />
+            
+            <Line 
+              type="monotone" 
+              dataKey="actual" 
+              stroke="var(--color-actual)" 
+              strokeWidth={2}
+              dot={false}
+              name="actual"
+            />
+            <Line 
+              type="monotone" 
+              dataKey="predicted" 
+              stroke="var(--color-predicted)" 
+              strokeWidth={2} 
+              strokeDasharray="5 5"
+              dot={false}
+              name="predicted"
+              isAnimationActive={true}
+            />
+            {predictionStartDate && (
+              <ReferenceLine 
+                x={predictionStartDate} 
+                stroke="#888" 
+                strokeDasharray="3 3"
+                label={{ value: 'Today', position: 'insideTopRight', fill: '#888', fontSize: 11 }}
+              />
+            )}
+          </LineChart>
+        </ChartContainer>
+      </div>
+      
+      {/* Exchange rate info */}
+      <div className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400 border-t pt-3">
+        {getExchangeRateInfo()}
+      </div>
     </div>
   );
 };
