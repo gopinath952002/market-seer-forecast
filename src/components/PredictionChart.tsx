@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { format, parseISO } from 'date-fns';
 import { StockPrediction } from '@/utils/mockData';
@@ -38,9 +37,9 @@ const PredictionChart: React.FC<PredictionChartProps> = ({ prediction }) => {
       date: item.date,
       actual: item.actual ? (shouldConvertToINR ? convertUsdToInr(item.actual) : item.actual) : null,
       predicted: shouldConvertToINR ? convertUsdToInr(item.predicted) : item.predicted,
-      lowerBound: item.lowerBound ? (shouldConvertToINR ? convertUsdToInr(parseFloat(item.lowerBound)) : parseFloat(item.lowerBound)) : null,
-      upperBound: item.upperBound ? (shouldConvertToINR ? convertUsdToInr(parseFloat(item.upperBound)) : parseFloat(item.upperBound)) : null,
-      confidenceInterval: item.confidenceInterval ? (shouldConvertToINR ? convertUsdToInr(parseFloat(item.confidenceInterval)) : parseFloat(item.confidenceInterval)) : null,
+      lowerBound: ('lowerBound' in item && item.lowerBound) ? (shouldConvertToINR ? convertUsdToInr(parseFloat(item.lowerBound)) : parseFloat(item.lowerBound)) : null,
+      upperBound: ('upperBound' in item && item.upperBound) ? (shouldConvertToINR ? convertUsdToInr(parseFloat(item.upperBound)) : parseFloat(item.upperBound)) : null,
+      confidenceInterval: ('confidenceInterval' in item && item.confidenceInterval) ? (shouldConvertToINR ? convertUsdToInr(parseFloat(item.confidenceInterval)) : parseFloat(item.confidenceInterval)) : null,
       isPrediction: true
     }))
   ].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -133,7 +132,7 @@ const PredictionChart: React.FC<PredictionChartProps> = ({ prediction }) => {
                         item.date === entry.payload.date && 
                         item.predicted === value
                       );
-                      const confInterval = item && 'confidenceInterval' in item ? item.confidenceInterval : null;
+                      const confInterval = item?.confidenceInterval;
                       return [
                         `${formatINR(Number(value))}${confInterval ? ` ± ${formatINR(confInterval)}` : ''}`, 
                         'Prediction'

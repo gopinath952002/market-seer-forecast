@@ -1,5 +1,15 @@
 import { StockPrediction } from '@/utils/mockData';
 
+// Enhanced prediction data type with confidence intervals
+interface EnhancedPredictionData {
+  date: string;
+  actual: number | null;
+  predicted: number;
+  confidenceInterval?: string;
+  lowerBound?: string;
+  upperBound?: string;
+}
+
 // Prepare RSI data from prediction object
 export const prepareRSIData = (prediction: StockPrediction) => {
   const { historicalData, indicators } = prediction;
@@ -91,7 +101,7 @@ export const prepareBollingerData = (prediction: StockPrediction) => {
     if (!item.predicted) return;
     
     // Increase volatility for predictions (wider bands indicate more uncertainty)
-    const price = 'actual' in item && item.actual ? item.actual : item.predicted;
+    const price = item.actual ? item.actual : item.predicted;
     const daysSincePredictionStart = new Date(item.date).getTime() - new Date(predictionStartDate).getTime();
     const daysOffset = daysSincePredictionStart / (1000 * 60 * 60 * 24);
     
@@ -116,19 +126,14 @@ export const prepareBollingerData = (prediction: StockPrediction) => {
 };
 
 // Generate confidence intervals for prediction data
-export const addConfidenceIntervals = (prediction: StockPrediction) => {
+export const addConfidenceIntervals = (prediction: StockPrediction): EnhancedPredictionData[] => {
   const { predictionData, metrics } = prediction;
   
   const baseConfidence = metrics.confidence;
   const volatility = 1 - baseConfidence; // Higher confidence = lower volatility
   
   return predictionData.map((item, index) => {
-    if (!item.predicted) return item;
-    
-    // If the item already has confidence intervals, return it as is
-    if (item.confidenceInterval && item.lowerBound && item.upperBound) {
-      return item;
-    }
+    if (!item.predicted) return item as EnhancedPredictionData;
     
     // Increasing uncertainty over time
     const volatilityFactor = volatility * (1 + (index * 0.1));
@@ -139,7 +144,7 @@ export const addConfidenceIntervals = (prediction: StockPrediction) => {
       confidenceInterval: interval.toFixed(2),
       lowerBound: (item.predicted - interval).toFixed(2),
       upperBound: (item.predicted + interval).toFixed(2)
-    };
+    } as EnhancedPredictionData;
   });
 };
 

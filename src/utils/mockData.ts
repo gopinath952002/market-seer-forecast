@@ -1,4 +1,3 @@
-
 export interface StockPrediction {
   ticker: string;
   metadata: {
@@ -57,6 +56,15 @@ const usStockPrices: Record<string, { current: number; name: string }> = {
   'NVDA': { current: 875.25, name: 'NVIDIA Corporation' },
   'META': { current: 298.45, name: 'Meta Platforms Inc.' }
 };
+
+// Export mockStockInfo combining both Indian and US stocks
+export const mockStockInfo: Record<string, { name: string }> = {
+  ...Object.fromEntries(Object.entries(indianStockPrices).map(([key, value]) => [key, { name: value.name }])),
+  ...Object.fromEntries(Object.entries(usStockPrices).map(([key, value]) => [key, { name: value.name }]))
+};
+
+// Export popular tickers
+export const popularTickers = ['TCS', 'INFY', 'RELIANCE', 'AAPL', 'GOOGL', 'MSFT'];
 
 export const getStockPrediction = (ticker: string): StockPrediction => {
   // Check if it's an Indian stock (use INR prices directly) or US stock (use USD prices)
