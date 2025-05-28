@@ -44,11 +44,23 @@ const Index = () => {
           const { data: { user } } = await supabase.auth.getUser();
           
           if (user) {
+            // Map recommendation to database accepted values
+            let predicted_direction: string;
+            const recommendation = result.indicators.recommendation.toLowerCase();
+            
+            if (recommendation.includes('buy') || recommendation === 'strong buy') {
+              predicted_direction = 'up';
+            } else if (recommendation.includes('sell') || recommendation === 'strong sell') {
+              predicted_direction = 'down';
+            } else {
+              predicted_direction = 'neutral'; // Use 'neutral' instead of 'hold'
+            }
+
             const { error } = await supabase
               .from('stock_predictions')
               .insert({
                 ticker,
-                predicted_direction: result.indicators.recommendation.toLowerCase(),
+                predicted_direction,
                 initial_price: result.metadata.currentPrice,
                 user_id: user.id
               });
@@ -217,7 +229,8 @@ const Index = () => {
           <div className="bg-red-50/80 dark:bg-red-900/20 p-6 rounded-lg border border-red-200 dark:border-red-800">
             <h3 className="text-lg font-medium text-red-800 dark:text-red-400 mb-2">API Error</h3>
             <p className="text-red-700 dark:text-red-300">
-              There was a problem fetching stock data. Please try again later or try a different ticker symbol.
+              There was a problem fetching stock data. This is likely because you're using the demo API key. 
+              Please get a free API key from Alpha Vantage or switch back to demo mode for testing.
             </p>
           </div>
         )}

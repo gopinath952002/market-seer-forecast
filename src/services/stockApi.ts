@@ -17,7 +17,14 @@ export const fetchStockData = async (ticker: string): Promise<any> => {
       throw new Error(`API Error: ${response.status}`);
     }
     
-    return await response.json();
+    const data = await response.json();
+    
+    // Check if we got a demo API response
+    if (data.Information && data.Information.includes('demo')) {
+      throw new Error('Demo API key detected. Please get a free API key from Alpha Vantage to use live data.');
+    }
+    
+    return data;
   } catch (error) {
     console.error('Error fetching stock data:', error);
     throw error;
@@ -30,11 +37,15 @@ export const convertApiDataToPrediction = (data: any, ticker: string): StockPred
     // Extract time series data
     const timeSeriesData = data['Time Series (Daily)'];
     if (!timeSeriesData) {
-      throw new Error('Invalid API response format');
+      throw new Error('Invalid API response format - no time series data found');
     }
     
     // Convert to our format
     const dates = Object.keys(timeSeriesData).sort();
+    
+    if (dates.length === 0) {
+      throw new Error('No historical data available for this ticker');
+    }
     
     // Extract historical data (past 60 days)
     const historicalData = dates.slice(0, 60).map(date => ({
